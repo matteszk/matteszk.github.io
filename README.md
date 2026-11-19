@@ -128,8 +128,8 @@ Inside `index.html`, the script is organized roughly in this order:
 
 ## Credits
 
-Design and development by Matthew Szklarz.
-Inspired by the attract screens of late-90s 3D console games. All models, textures, animation, sound effects and music are original and generated in code.
+Concept and art direction by Matthew Szklarz. The code was written by Claude, an AI model, through many rounds of my direction and feedback.
+Inspired by the attract screens of late-90s 3D console games. All models, textures, animation, sound effects and music are original and generated in code; no assets were taken from any game.
 
 ## Contact
 

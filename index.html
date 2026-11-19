@@ -97,8 +97,10 @@
 <div id="fade"></div>
 <div id="vig"></div>
 
+<a class="skipintro" href="/work/">Skip intro</a>
+<button class="snd" id="snd" aria-pressed="false">SOUND: OFF</button>
 <main class="ui">
-  <button class="start" id="start"><span>START</span></button>
+  <button class="start" id="start"><span>PRESS START</span></button>
 </main>
 <div id="scnbar"><button id="scprev" aria-label="Previous scene">◀</button><span id="scn">scene: 1</span><button id="scnext" aria-label="Next scene">▶</button></div>
 <div class="foot">© 2026 MATTHEW SZKLARZ</div>
@@ -107,8 +109,6 @@
 <p style="margin:0"><a href="/work/">See my work →</a></p>
 <p style="margin:0"><a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a> · <a href="mailto:mszklarz@gmail.com">mszklarz@gmail.com</a></p></div>
 <div id="notes3d"></div>
-<a class="skipintro" href="/work/">Skip intro →</a>
-<button class="snd" id="snd" aria-pressed="false">SOUND: OFF</button>
 <button class="back3d" id="back">BACK</button>
 
 
@@ -191,7 +191,7 @@ const TREES={
   [[.9,3,.6],[-.8,2.4,-.9],[.6,3.6,-1.1]].forEach(([r,h,t])=>{const b=mk(new THREE.CylinderGeometry(.06,.12,1.8,4),deadM,0,h,0);b.rotation.z=r;b.rotation.y=t;g.add(b)});return g}};
 const kinds=['pine','pine','fir','fir','oak','oak','birch','dead'];
 for(let i=0;i<420;i++){const x=(Math.random()-.5)*700,z=(Math.random()-.5)*700;
- if(x>-130&&x<130&&z>-130&&z<90)continue;if(x>-250&&x<-160&&z>-100&&z<-20)continue;if(x>-125&&x<-55&&z>160&&z<230)continue;if(x>-50&&x<145&&z>110&&z<215)continue;if(x>330&&x<470&&Math.abs(z-60)<90)continue;if(Math.abs(z-200)<10||Math.abs(z+200)<10||Math.abs(x-200)<10)continue;
+ if(x>-130&&x<130&&z>-130&&z<90)continue;if(x>-250&&x<-160&&z>-100&&z<-20)continue;if(x>-125&&x<-55&&z>160&&z<230)continue;if(x>-70&&x<160&&z>92&&z<270)continue;if(x>330&&x<470&&Math.abs(z-60)<90)continue;if(Math.abs(z-200)<10||Math.abs(z+200)<10||Math.abs(x-200)<10)continue;
  const tree=Math.random()<.78,s=.7+Math.random()*1.2,m=tree?TREES[kinds[Math.random()*kinds.length|0]]():new THREE.Mesh(rg,rm);m.scale.setScalar(s);
  m.position.set(x,hgt(x,z)+(tree?-.1:.3),z);m.rotation.y=Math.random()*6;S.add(m)}
 
@@ -279,37 +279,22 @@ function house(x,z,rot,type,red){const h=new THREE.Group(),bxh=(w,hh,d,m,px,py,p
  else {lw=4;bxh(4,3,4.5,W,0,1.5,0);gableRoof(h,4,4.5,3.4,3,RF);}
  if(lw)[-1.2,1.2].forEach((px,i)=>bxh(.7,.8,.1,(x+z+i)%3<1?lit:winD,px,1.8,2.56));
  h.position.set(x,hgt(x,z)-.3,z);h.rotation.y=rot;h.scale.setScalar(1.05);S.add(h)}
-const HS=[[-12,180,.1,5],[8,176,-.2,1,1],[28,182,.15,6],[46,174,0,5],[66,180,-.1,7],[86,176,.2,5],[104,183,0,3],
- [-30,152,.3,6],[-4,150,-.2,5],[62,154,-.3,5],[84,148,.1,6],
- [-18,128,.2,5],[34,118,.3,5],[58,126,0,6],[80,120,.2,7],[128,138,.1,0]];
+const HS=[[-12,162,.1,5],[8,158,-.2,1,1],[28,164,.15,6],[46,156,0,5],[66,162,-.1,7],[86,158,.2,5],[104,165,0,3],
+ [-30,134,.3,6],[-4,132,-.2,5],[62,136,-.3,5],[84,130,.1,6],
+ [-18,110,.2,5],[34,100,.3,5],[58,108,0,6],[80,102,.2,7],[128,120,.1,0]];
 HS.forEach(([x,z,r,t,red])=>house(x,z,r,t,red));
 {// dense fir forest on the slope behind the village, with a few autumn trees mixed in
- for(let i=0;i<260;i++){const x=-90+Math.random()*280,z=92+Math.random()*20;
+ for(let i=0;i<260;i++){const x=-90+Math.random()*280,z=74+Math.random()*20;
   const t=Math.random()<.9?TREES.fir():TREES.oak();if(t.children[1]&&Math.random()<.5)t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=leafM[3]});
   const s2=1.4+Math.random()*1.4;t.scale.setScalar(s2);t.position.set(x,hgt(x,z)-.2,z);t.rotation.y=Math.random()*6;S.add(t)}
  const orange=new THREE.MeshLambertMaterial({color:'#d8782a',flatShading:true});
- [[-36,100],[22,96],[70,104],[128,92],[150,110]].forEach(([x,z])=>{const t=TREES.oak();t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=orange});t.scale.setScalar(1.6);t.position.set(x,hgt(x,z)-.1,z);S.add(t)})}
-{const car=new THREE.Group(),C=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true});
- const paint=C('#e0701e'),clad=C('#1e1e20'),glass=C('#2a3440'),rim=C('#9a9ea4'),lamp=new THREE.MeshBasicMaterial({color:'#fff4d0'}),tail=new THREE.MeshBasicMaterial({color:'#b01818'});
- const cb=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);car.add(o);return o};
- cb(4.3,1,1.8,paint,0,1.05,0);                       // lower body
- cb(4.36,.35,1.84,clad,0,.62,0);                     // black lower cladding
- cb(2.7,.85,1.66,paint,-.3,1.95,0);                  // cabin
- cb(2.62,.62,1.7,glass,-.3,1.98,0);                  // side windows band
- const ws=cb(.08,.7,1.5,glass,1.12,1.92,0);ws.rotation.z=.5; // windshield
- cb(.9,.25,1.8,paint,1.75,1.45,0);                   // hood bulge
- [[-.6],[.3]].forEach(([z])=>cb(2.4,.06,.06,clad,-.35,2.42,z));             // roof rails
- cb(.1,.32,.5,lamp,2.16,1.25,.6);cb(.1,.32,.5,lamp,2.16,1.25,-.6);cb(.1,.28,.6,clad,2.17,.9,0); // lights, grille
- cb(.1,.3,.35,tail,-2.16,1.3,.65);cb(.1,.3,.35,tail,-2.16,1.3,-.65);
- [[1.35,.95],[1.35,-.95],[-1.35,.95],[-1.35,-.95]].forEach(([x,z])=>{const w=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.36,10),clad);w.rotation.x=Math.PI/2;w.position.set(x,.48,z);car.add(w);
-  const r=new THREE.Mesh(new THREE.CylinderGeometry(.26,.26,.38,8),rim);r.rotation.x=Math.PI/2;r.position.set(x,.48,z);car.add(r);
-  cb(1.2,.18,.2,clad,x,1.02,z>0?.93:-.93)});
- const cx=44,cz=190;car.position.set(cx,hgt(cx,cz)-.05,cz);car.rotation.y=.25;car.scale.setScalar(1.15);S.add(car)}
+ [[-36,82],[22,78],[70,86],[128,74],[150,92]].forEach(([x,z])=>{const t=TREES.oak();t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=orange});t.scale.setScalar(1.6);t.position.set(x,hgt(x,z)-.1,z);S.add(t)})}
+
 // fruit trees and haystacks between houses
-[[-2,168],[38,166],[74,166],[96,168],[18,140],[50,136],[90,138]].forEach(([x,z],i)=>{const t=TREES[i%2?'oak':'birch']();t.scale.setScalar(.8);t.position.set(x,hgt(x,z)-.1,z);S.add(t)});
+[[-2,150],[38,148],[74,148],[96,150],[18,122],[50,118],[90,120]].forEach(([x,z],i)=>{const t=TREES[i%2?'oak':'birch']();t.scale.setScalar(.8);t.position.set(x,hgt(x,z)-.1,z);S.add(t)});
 
 // small cabbage garden in the village (scene 2), between the lane and the houses
-{const dir=new THREE.Vector2(1,0),side=new THREE.Vector2(0,1),o=new THREE.Vector2(-44,190.5);
+{const dir=new THREE.Vector2(1,0),side=new THREE.Vector2(0,1),o=new THREE.Vector2(-44,172.5);
  const cc=document.createElement('canvas');cc.width=cc.height=64;const c=cc.getContext('2d');
  c.fillStyle='#b5d98c';c.fillRect(0,0,64,64);c.strokeStyle='#eaf6d4';c.lineWidth=2;
  for(let i=0;i<7;i++){c.beginPath();c.moveTo(32,64);c.quadraticCurveTo(32+(i-3)*14,32,32+(i-3)*9,0);c.stroke()}
@@ -347,6 +332,24 @@ const BATS=[];{castle.updateMatrixWorld(true);const top=castle.localToWorld(new 
   const L=new THREE.Group(),Rw=new THREE.Group();const wl=new THREE.Mesh(wg,bm);L.add(wl);const wr=new THREE.Mesh(wg,bm);wr.scale.x=-1;Rw.add(wr);
   L.position.x=.1;Rw.position.x=-.1;b.add(L,Rw);b.scale.setScalar(.75);S.add(b);
   BATS.push({b,L,R:Rw,top,ph:Math.random()*6,sp:.9+Math.random()*.5,rad:8+Math.random()*16,h:Math.random()*10,off:i/9,flap:13+Math.random()*5})}}
+const MIST=[];{castle.updateMatrixWorld(true);const ctr=castle.localToWorld(new THREE.Vector3(0,30,0));
+ const mc=document.createElement('canvas');mc.width=mc.height=64;const mx=mc.getContext('2d'),gr=mx.createRadialGradient(32,32,0,32,32,32);
+ gr.addColorStop(0,'rgba(190,140,255,.55)');gr.addColorStop(.5,'rgba(140,90,220,.22)');gr.addColorStop(1,'rgba(120,70,200,0)');mx.fillStyle=gr;mx.fillRect(0,0,64,64);
+ const mt=new THREE.CanvasTexture(mc);
+ for(let i=0;i<70;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:mt,transparent:true,depthWrite:false,opacity:.5,color:i%3?'#b48cff':'#8f6ad8'}));
+  const s=14+Math.random()*18;sp.scale.set(s,s*.6,1);S.add(sp);
+  MIST.push({sp,ctr,a:Math.random()*6.283,r:16+Math.random()*28,h:12+Math.random()*34,sp2:.05+Math.random()*.08,ph:Math.random()*6.283,bob:2+Math.random()*4})}}
+function swirlMist(T){MIST.forEach(m=>{const a=m.a+T*m.sp2;m.sp.position.set(m.ctr.x+Math.cos(a)*m.r,m.ctr.y+m.h+Math.sin(T*.3+m.ph)*m.bob,m.ctr.z+Math.sin(a)*m.r*.8);
+ m.sp.material.opacity=.28+.18*Math.sin(T*.5+m.ph)})}
+const SKYMIST=[];{const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');
+ for(let i=0;i<7;i++){const cx=20+Math.random()*88,cy=24+Math.random()*16,r=14+Math.random()*16,g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'rgba(222,226,232,.45)');g.addColorStop(1,'rgba(222,226,232,0)');x.fillStyle=g;x.fillRect(0,0,128,64)}
+ const t=new THREE.CanvasTexture(c);
+ for(let i=0;i<26;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,fog:false,opacity:.0}));
+  const w=70+Math.random()*120;sp.scale.set(w,w*.28,1);sp.visible=false;S.add(sp);
+  SKYMIST.push({sp,x:-220+Math.random()*460,y:40+Math.random()*110,z:-160-Math.random()*140,v:1.2+Math.random()*2.4,o:.25+Math.random()*.35,ph:Math.random()*6.283})}}
+for(let i=0;i<16;i++){const src=SKYMIST[i%SKYMIST.length].sp,sp=new THREE.Sprite(src.material.clone());const w=80+Math.random()*110;sp.scale.set(w,w*.3,1);sp.visible=false;S.add(sp);
+ SKYMIST.push({sp,x:60+Math.random()*170,y:45+Math.random()*95,z:-170-Math.random()*120,v:.25+Math.random()*.5,o:.3+Math.random()*.3,ph:Math.random()*6.283,fixed:1})}
+function skyMist(T,on){SKYMIST.forEach(m=>{m.sp.visible=on;if(!on)return;let x=m.x+T*m.v;x=m.fixed?m.x+Math.sin(T*.05*m.v+m.ph)*12:((x+240)%480+480)%480-240;m.sp.position.set(x,m.y+Math.sin(T*.2+m.ph)*3,m.z);m.sp.material.opacity=m.o*(.75+.25*Math.sin(T*.3+m.ph))})}
 function flyBats(T){BATS.forEach(o=>{const c=((T*.07*o.sp)+o.off)%1, // each bat loops: out of the tower, wide swoop, back
   a=c*Math.PI*2*1.5+o.ph,r=o.rad*Math.sin(c*Math.PI)+1;
   const x=o.top.x-c*30+Math.cos(a)*r,y=o.top.y+2+Math.sin(c*Math.PI)*o.h+Math.sin(a*2)*2,z=o.top.z+Math.sin(a)*r;
@@ -416,7 +419,7 @@ S.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshLambertMaterial&&!o.mat
 
 // gaits. gallop: rotary footfall offsets; prance: springy bounding (pronk-ish)
 const OFF=[0,.5,.25,.75],TROT=[0,.5,.5,0];let GOFF=OFF; // RF, LF, RH, LH: each leg a quarter-cycle apart
-function gallop(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;beard.rotation.x=Math.sin(ph*2+1)*.12;
+function gallop(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;beard.rotation.x=Math.sin(ph*2+1)*.12;
  L.forEach((l,i)=>{const a=ph+GOFF[i]*2*Math.PI,sw=Math.max(0,Math.cos(a));
   l.hip.rotation.x=-Math.sin(a)*(l.front?.55:.5);
   l.knee.rotation.x=l.front?sw*1.1:-sw*.8});
@@ -461,7 +464,7 @@ const apple=new THREE.Group();
   for(let k=0;k<3;k++){const f=new THREE.Mesh(ag,am[k%3]);f.scale.setScalar(.8);f.position.set((rnd()-.5)*3,.22,(rnd()-.5)*3);t.add(f)}});
 }
 S.add(apple);
-function graze(t){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1}); head.rotation.y=0;body.scale.y=1;// standing, head down to the apple, chewing
+function graze(t){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1}); head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;// standing, head down to the apple, chewing
  rig.position.y=0;body.rotation.x=.04;L.forEach(l=>{l.hip.rotation.x=0;l.knee.rotation.x=0});
  const dip=1.22+Math.sin(t*.6)*.06;neck.rotation.x=dip;head.rotation.x=.6+Math.sin(t*6.6)*.05;body.rotation.x=.1;
  tail.rotation.x=-.5+Math.sin(t*3)*.35}
@@ -471,8 +474,10 @@ function sleep(t){EYES.forEach(e=>{e.material=lidM;e.scale.y=.25}); // lying dow
  rig.position.y=-1.08;body.rotation.x=0;
  L.forEach(l=>{l.hip.rotation.x=l.front?1.45:-1.45;l.knee.rotation.x=l.front?-.4:.4});
  neck.rotation.x=1.05;head.rotation.x=.35;head.rotation.y=.5;
- body.scale.y=1+Math.sin(t*1.6)*.035;tail.rotation.x=-1.2}
-function prance(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;const s=Math.sin(ph),air=Math.max(0,s);
+ body.scale.y=1;{const br=1+Math.sin(t*1.6)*.035;chest.scale.y=br;hips.scale.y=br};tail.rotation.x=-1.2}
+function walk(ph){gallop(ph);L.forEach(l=>{l.hip.rotation.x*=.5;l.knee.rotation.x*=.55});rig.position.y=Math.abs(Math.sin(ph*2))*.03-.13;body.rotation.x*=.4;neck.rotation.x=-.05+Math.sin(ph*2)*.03}
+function stand(){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;rig.position.y=-.13;body.rotation.x=0;L.forEach(l=>{l.hip.rotation.x=0;l.knee.rotation.x=0});neck.rotation.x=-.08;head.rotation.x=0;tail.rotation.x=-.5}
+function prance(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;const s=Math.sin(ph),air=Math.max(0,s);
  rig.position.y=air*1.1;
  L.forEach(l=>{l.hip.rotation.x=(l.front?-1:1)*(.15+air*.55);l.knee.rotation.x=(l.front?-1:1)*air*1.2});
  body.rotation.x=-Math.cos(ph)*.18;neck.rotation.x=-.2+air*.25;head.rotation.x=-air*.2;tail.rotation.x=-.9+air*.6}
@@ -534,7 +539,7 @@ const NOTES=[
  {href:'https://www.linkedin.com/in/matthew-szklarz',icon:'brief',title:'LinkedIn',sub:'',x:-2.3,y:3.65,r:-.06},
  {href:'https://github.com/matteszk',icon:'branch',title:'GitHub',sub:'',x:0,y:3.22,r:.04},
  {href:'mailto:mszklarz@gmail.com',icon:'mail',title:'Email me',sub:'',x:2.3,y:3.6,r:-.03},
- {href:'/work/',kind:'plank',title:'See my work →',x:.1,y:.98,r:.025,w:3.3,h:.82}];
+ {href:'/work/',kind:'plank',title:'Portfolio',x:.1,y:.98,r:.025,w:3.3,h:.82}];
 function drawPlank(n){const c=n.cv||(n.cv=document.createElement('canvas'));c.width=420;c.height=104;const x=c.getContext('2d');
  const g=x.createLinearGradient(0,0,0,104);g.addColorStop(0,'#8a6a4a');g.addColorStop(1,'#6a4e34');x.fillStyle=g;x.fillRect(0,0,420,104);
  for(let k=0;k<26;k++){x.strokeStyle=`rgba(40,24,12,${.12+Math.random()*.18})`;x.lineWidth=1+Math.random()*2;x.beginPath();const y=Math.random()*104;x.moveTo(0,y);x.bezierCurveTo(140,y+Math.random()*8-4,280,y+Math.random()*8-4,420,y+Math.random()*6-3);x.stroke()}
@@ -557,7 +562,10 @@ NOTES.forEach(n=>{drawNote(n);n.tex=new THREE.CanvasTexture(n.cv);
  n.w=n.w||2.05;n.h=n.h||2.46;const top=n.kind==='plank'?.75:n.h*.42;n.top=top;
  n.mesh=new THREE.Mesh(new THREE.PlaneGeometry(n.w,n.h),new THREE.MeshLambertMaterial({map:n.tex}));
  n.hang=new THREE.Group();n.hang.position.set(n.x,n.y+top,.36);n.hang.rotation.z=n.r;board.add(n.hang);n.mesh.position.y=-top;n.hang.add(n.mesh);
- if(n.kind==='plank'){const rope=new THREE.MeshLambertMaterial({color:'#8a7a5c'});[-1,1].forEach(sd=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,top,6),rope);r.position.set(sd*n.w*.42,-top/2+.02,-.02);n.hang.add(r)})}
+ if(n.kind==='plank'){const rope=new THREE.MeshLambertMaterial({color:'#8a7a5c'}),ey=-top+n.h/2-.04;
+  // triangle hanger: a rope from each end of the plank up to a single nail on the beam
+  [-1,1].forEach(sd=>{const ex=sd*n.w*.42,len=Math.hypot(ex,ey),r=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,len,6),rope);r.position.set(ex/2,ey/2,-.02);r.rotation.z=Math.atan2(ex,-ey);n.hang.add(r)});
+  const nail=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.08,8),new THREE.MeshLambertMaterial({color:'#3a3836'}));nail.rotation.x=Math.PI/2;nail.position.set(0,0,-.01);n.hang.add(nail)}
  const a=document.createElement('a');a.href=n.href;if(!n.href.startsWith('mailto'))a.target='_blank';a.rel='noopener';a.className='hot';a.setAttribute('aria-label',n.title);
  if(n.kind==='plank')a.removeAttribute('target');
  a.onmouseenter=a.onfocus=()=>{if(!n.hover)n.wig=performance.now()/1000;n.hover=1};a.onmouseleave=a.onblur=()=>n.hover=0;noteLayer.appendChild(a);n.a=a});
@@ -575,12 +583,12 @@ function leaveBoard(){if(mode!=='board')return;zz.forEach(z=>z.visible=false);do
 let filmT=0,boardT=0;window.enterBoard=enterBoard;window.leaveBoard=leaveBoard;
 const shots=[
  {// 1: hill + setting moon upper right, goat prances across crest
-  start:V(-34,0,0),dir:V(1,0,0),speed:6,gait:'prance',
+  start:V(-48,0,0),dir:V(1,0,0),speed:8.5,gait:'gallop',
   cam:(gp,lt)=>({pos:V(-4+lt*.06,G(0,55)+3,55),look:V(0,15+lt*.02,0)}),
   moon:(lt)=>V(95,168-lt*3.5,-260)},
  {// 2: low tracking side shot
-  start:V(-60,0,200),dir:V(1,0,0),speed:8,gait:'gallop',
-  cam:(gp,lt)=>({pos:V(gp.x-3+lt*.1,gp.y+1.6,gp.z+9),look:V(gp.x+1,gp.y+1.4,gp.z)}),
+  start:V(-60,0,246),dir:V(1,0,0),speed:8,gait:'gallop',
+  cam:(gp,lt)=>({pos:V(gp.x-3+lt*.1,gp.y+6.5,gp.z+12),look:V(gp.x+1,gp.y+1.2,gp.z-6)}),
   moon:()=>V(-120,140,-300)},
  {// graze: camera starts high, pans down, then holds
   start:V(-205,0,-60),dir:V(1,0,-.35).normalize(),speed:0,gait:'graze',
@@ -595,7 +603,7 @@ const shots=[
   cam:(gp,lt)=>({pos:V(250-lt*5.5,G(250-lt*5.5,48)+2.2,48),look:V(gp.x+(400-gp.x)*.3,gp.y+8,gp.z+3)}),
   moon:()=>V(520,150,-60)},
  {// 5: high sweeping orbit over the fields
-  start:V(150,0,-60),dir:V(-.4,0,1).normalize(),speed:8,gait:'gallop',
+  start:V(150,0,-60),dir:V(-.4,0,1).normalize(),speed:8,gait:'gallop',tOff:2,
   cam:(gp,lt)=>{const a=lt*.16+1;return{pos:V(gp.x+Math.sin(a)*22,gp.y+12-lt*.4,gp.z+Math.cos(a)*22),look:V(gp.x,gp.y+1.5,gp.z)}},
   moon:()=>V(-200,130,-350)}
 ];
@@ -699,8 +707,8 @@ function flatten(tex,k){const c=tex.image;if(!c||!c.getContext||c._soft)return;c
 S.traverse(o=>{if(!o.isMesh&&!o.isInstancedMesh)return;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!m)return;
  if(m.isMeshLambertMaterial&&m.flatShading){m.flatShading=false;m.needsUpdate=true}
  if(m.map&&m.isMeshLambertMaterial&&!NOTES.some(n=>n.tex===m.map))flatten(m.map,.6)})});
-{const keep=new Set([goat,board,castle,apple,blob,dome,stars,moon,ff,ml,ml.target]);const segs=[];
- shots.forEach((sh,i)=>{if(!sh.speed)return;const a=sh.start.clone(),b=sh.start.clone().addScaledVector(sh.dir,sh.speed*12);segs.push([a,b])});
+{const keep=new Set([goat,board,castle,apple,blob,dome,stars,moon,ff,ml,ml.target,...BATS.map(o=>o.b),...MIST.map(m=>m.sp),...SKYMIST.map(m=>m.sp)]);const segs=[];
+ shots.forEach((sh,i)=>{if(!sh.speed)return;const a=sh.start.clone(),b=sh.start.clone().addScaledVector(sh.dir,sh.speed*(12+(sh.tOff||0)));segs.push([a,b])});
  const dSeg=(p,a,b)=>{const ab=b.clone().sub(a);ab.y=0;const ap=p.clone().sub(a);ap.y=0;const t=Math.max(0,Math.min(1,ap.dot(ab)/ab.lengthSq()));return ap.sub(ab.multiplyScalar(t)).length()};
  const box=new THREE.Box3(),ctr=new THREE.Vector3(),sz=new THREE.Vector3(),drop=[];
  S.children.forEach(o=>{if(keep.has(o)||o.isLight||o.isSprite||o.isPoints||o.isInstancedMesh)return;box.setFromObject(o);if(box.isEmpty())return;box.getCenter(ctr);box.getSize(sz);
@@ -738,20 +746,28 @@ function boardFrame(TT){const lt=boardT;
  const T=filmT;{let m2=T%TOT,j=0;while(m2>=DUR[j]){m2-=DUR[j];j++}setScn(j+1)}
  let m=T%TOT,idx=0;while(m>=DUR[idx]){m-=DUR[idx];idx++}const lt=m,SHOT=DUR[idx],sh=shots[idx];
  fade.style.opacity=lt<.45?1-lt/.45:lt>SHOT-.35?(lt-(SHOT-.35))/.35:0;
- const gp=sh.start.clone().addScaledVector(sh.dir,sh.speed*lt);{const fx=gp.x+sh.dir.x*1,fz=gp.z+sh.dir.z*1,bx2=gp.x-sh.dir.x*1,bz2=gp.z-sh.dir.z*1;gp.y=Math.min(G(gp.x,gp.z),(G(fx,fz)+G(bx2,bz2))/2)-.03}
+ const MW={stop:5.1,jump:5.6,land:6.5,go:7.0};const lte=lt+(sh.tOff||0);const dist=sh.gait==='moonwalk'?sh.speed*(Math.min(lt,MW.stop)+Math.max(0,lt-MW.go)):sh.speed*lte;
+ const gp=sh.start.clone().addScaledVector(sh.dir,dist);{const fx=gp.x+sh.dir.x*1,fz=gp.z+sh.dir.z*1,bx2=gp.x-sh.dir.x*1,bz2=gp.z-sh.dir.z*1;gp.y=Math.min(G(gp.x,gp.z),(G(fx,fz)+G(bx2,bz2))/2)-.03}
  goat.position.copy(gp);tmp.copy(gp).add(sh.dir);goat.lookAt(tmp.x,G(tmp.x,tmp.z),tmp.z);
- GOFF=sh.trot?TROT:OFF;const ph=lt*(sh.gait==='prance'?6:6.5);if(sh.gait==='graze')graze(lt);else (sh.gait==='prance'?prance:gallop)(ph);
+ GOFF=sh.trot?TROT:OFF;let ph=lt*(sh.gait==='prance'?6:6.5),hg=sh.gait;
+ if(sh.gait==='moonwalk'){const wt=Math.min(lt,MW.stop)+Math.max(0,lt-MW.go);ph=wt*4.2;hg='gallop';
+  if(lt<MW.stop||lt>=MW.go){walk(ph)}
+  else if(lt>=MW.jump&&lt<MW.land){prance(Math.PI*2+(lt-MW.jump)/(MW.land-MW.jump)*Math.PI);hg='none'}
+  else{stand();hg='none'}
+  if(lt>=MW.land&&!window._landed){window._landed=1;sp.copy(gp);sp.project(cam);const pn=sp.x*.9;[0,22,38,60].forEach((ms,i)=>setTimeout(()=>clop(pn+(i%2?-.05:.05),.4,true,i),ms))}
+  if(lt<MW.jump)window._landed=0}
+ else if(sh.gait==='graze')graze(lt);else (sh.gait==='prance'?prance:gallop)(ph);
  apple.visible=sh.gait==='graze';if(apple.visible){const fw=sh.dir;apple.position.set(gp.x+fw.x*2.4,G(gp.x+fw.x*2.15,gp.z+fw.z*2.15)+.0,gp.z+fw.z*2.4);apple.position.y-=.05;apple.rotation.y=0}
- const c=sh.cam(gp,lt);cam.position.copy(c.pos);
+ const c=sh.cam(gp,lte);cam.position.copy(c.pos);
  const minY=G(c.pos.x,c.pos.z)+1;if(cam.position.y<minY)cam.position.y=minY;cam.lookAt(c.look);
- hooves(idx,sh.gait,ph,gp);
+ if(hg!=='none')hooves(idx,hg,ph,gp);
  if(sh.gait==='graze'){const n=Math.floor((lt*6.6-Math.PI/2)/(2*Math.PI));if(n!==window._chew){const first=window._chew===undefined||n<window._chew;window._chew=n;
   if(!first&&Math.random()<.8){sp.copy(gp);sp.project(cam);crunch(sp.x*.9,Math.min(.85,Math.max(.12,10/cam.position.distanceTo(gp))))}}}
  const mp=sh.moon(lt).add(V(cam.position.x*.0,0,0));moon.position.copy(mp);moon.visible=idx===0;moon.lookAt(cam.position);
  ml.position.copy(mp);ml.target.position.copy(gp);
  dome.position.copy(cam.position);stars.position.copy(cam.position);
  ff.position.set(gp.x,gp.y,gp.z);fmat.uniforms.t.value=T;
- flyBats(T);placeBlob();R.render(S,cam)})();
+ flyBats(T);swirlMist(T);skyMist(T,idx===0);placeBlob();R.render(S,cam)})();
 })();
 </script>
 <script>
@@ -764,8 +780,19 @@ document.getElementById('scprev').onclick=()=>window.jumpScene(-1);document.getE
 const snd=document.getElementById('snd');
 snd.onclick=()=>{const on=window.toggleSound();snd.textContent='SOUND: '+(on?'ON':'OFF');snd.setAttribute('aria-pressed',on)};
 document.getElementById('start').onclick=()=>enterBoard();
-document.getElementById('back').onclick=()=>leaveBoard();
-addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement.tagName!=='A')enterBoard();if(e.key==='Escape'||e.key==='Backspace')leaveBoard()});
+document.getElementById('back').onclick=()=>{leaveBoard();setTimeout(()=>startBtn.focus({preventScroll:true}),50)};
+// Start from anywhere on the attract screen: Enter or Space, unless focus is on another control (a link or the Sound button)
+const startBtn=document.getElementById('start');
+addEventListener('keydown',e=>{
+ const atBoard=document.body.classList.contains('atboard'),ae=document.activeElement,onOther=ae&&ae!==startBtn&&(ae.tagName==='A'||ae.tagName==='BUTTON');
+ if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(getComputedStyle(document.getElementById('scnbar')).display!=='none'){e.preventDefault();window.jumpScene(e.key==='ArrowLeft'?-1:1)}return}
+ if(!atBoard&&(e.key==='Enter'||e.key===' ')&&!onOther){e.preventDefault();enterBoard();return}
+ if(atBoard&&(e.key==='Escape'||e.key==='Backspace')){e.preventDefault();leaveBoard()}
+},true);
+// clicking or tapping the scene itself also starts
+document.addEventListener('click',e=>{if(document.body.classList.contains('atboard'))return;const t=e.target;if(t.id==='c'||t.classList.contains('ui')||t.id==='fade'||t.id==='vig')enterBoard()});
+// put keyboard focus on Start as soon as the page loads, so Enter works immediately
+
 </script>
 </body>
 </html>
