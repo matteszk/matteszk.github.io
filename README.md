@@ -2,7 +2,7 @@
 
 The portfolio homepage of **Matthew Szklarz**, WordPress and frontend developer.
 
-It's an interactive 3D title screen in the style of late-90s console games. A black mountain goat gallops, prances, grazes and naps through a Carpathian landscape while the camera cuts between shots, like an attract-mode intro. Press **Start** and the camera glides to a rustic notice board in the world, where pinned notes link to my LinkedIn, GitHub and email.
+It's an interactive 3D title screen in the style of a certain late-90s console game. A black mountain goat gallops, prances, grazes and naps through a Carpathian landscape while the camera cuts between shots, like an attract-mode intro. Press **Start** and the camera glides to a rustic notice board in the world, where pinned notes link to my LinkedIn, GitHub and email.
 
 **Live:** https://matteszk.github.io
 
