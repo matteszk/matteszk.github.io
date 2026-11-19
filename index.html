@@ -78,14 +78,17 @@
   #crt{position:fixed;inset:0;z-index:50;pointer-events:none;transition:opacity 1.6s ease,visibility 0s linear 1.6s}
   body.crtoff #crt{opacity:0;visibility:hidden}
   
-  #crt .lines{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0 1px,rgba(0,0,0,0) 1px 3px)}
-  #crt .glow{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 60%,rgba(0,0,0,.4) 100%)}
-  #crt .roll{position:absolute;left:0;right:0;height:20vh;background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.04),rgba(255,255,255,0));animation:roll 7s linear infinite}
+  #crt .lines{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1) 0 38%,rgba(0,0,0,0) 38% 100%);background-size:100% max(3px,calc(100vh / 240))}
+  #crt .glow{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 65%,rgba(0,0,0,.26) 100%)}
+  #crt .roll{position:absolute;left:0;right:0;height:20vh;background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.02),rgba(255,255,255,0));animation:roll 9s linear infinite}
   @keyframes roll{from{top:-25vh}to{top:105vh}}
-  #crt canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.05;mix-blend-mode:screen}
+  #crt canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.025;mix-blend-mode:screen}
   #scnbar{display:none}html.dev #scnbar{display:flex}
   #fallback{display:none;position:fixed;inset:0;z-index:100;background:#1c1820;color:#f4e9c8;font-family:Georgia,serif;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px}
   #fallback a{color:#e7b84a}
+  .skipintro{position:fixed;top:20px;left:22px;z-index:8;font-family:'Press Start 2P';font-size:.6rem;color:#f4e9c8;text-decoration:none;text-shadow:0 2px 4px rgba(0,0,0,.7)}
+  .skipintro:hover{color:#e7b84a}
+  body.atboard .skipintro{display:none}
 </style>
 </head>
 <body>
@@ -101,8 +104,10 @@
 <div class="foot">© 2026 MATTHEW SZKLARZ</div>
 
 <div id="fallback"><h1 style="font-weight:600;margin:0">Matthew Szklarz</h1><p style="margin:0;opacity:.8">WordPress &amp; frontend developer</p>
+<p style="margin:0"><a href="/work/">See my work →</a></p>
 <p style="margin:0"><a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a> · <a href="mailto:mszklarz@gmail.com">mszklarz@gmail.com</a></p></div>
 <div id="notes3d"></div>
+<a class="skipintro" href="/work/">Skip intro →</a>
 <button class="snd" id="snd" aria-pressed="false">SOUND: OFF</button>
 <button class="back3d" id="back">BACK</button>
 
@@ -110,6 +115,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+if(matchMedia('(prefers-reduced-motion: reduce)').matches&&location.hash!=='#play'&&location.hash!=='#dev')location.replace('/work/');
 if(location.hash==='#dev')document.documentElement.classList.add('dev');
 (()=>{
 const PX=1;
@@ -527,8 +533,18 @@ const ICON={
 const NOTES=[
  {href:'https://www.linkedin.com/in/matthew-szklarz',icon:'brief',title:'LinkedIn',sub:'',x:-2.3,y:3.65,r:-.06},
  {href:'https://github.com/matteszk',icon:'branch',title:'GitHub',sub:'',x:0,y:3.22,r:.04},
- {href:'mailto:mszklarz@gmail.com',icon:'mail',title:'Email me',sub:'',x:2.3,y:3.6,r:-.03}];
-function drawNote(n){const c=n.cv||(n.cv=document.createElement('canvas'));c.width=200;c.height=240;const x=c.getContext('2d');
+ {href:'mailto:mszklarz@gmail.com',icon:'mail',title:'Email me',sub:'',x:2.3,y:3.6,r:-.03},
+ {href:'/work/',kind:'plank',title:'See my work →',x:.1,y:.98,r:.025,w:3.3,h:.82}];
+function drawPlank(n){const c=n.cv||(n.cv=document.createElement('canvas'));c.width=420;c.height=104;const x=c.getContext('2d');
+ const g=x.createLinearGradient(0,0,0,104);g.addColorStop(0,'#8a6a4a');g.addColorStop(1,'#6a4e34');x.fillStyle=g;x.fillRect(0,0,420,104);
+ for(let k=0;k<26;k++){x.strokeStyle=`rgba(40,24,12,${.12+Math.random()*.18})`;x.lineWidth=1+Math.random()*2;x.beginPath();const y=Math.random()*104;x.moveTo(0,y);x.bezierCurveTo(140,y+Math.random()*8-4,280,y+Math.random()*8-4,420,y+Math.random()*6-3);x.stroke()}
+ x.fillStyle='rgba(40,24,12,.55)';x.beginPath();x.ellipse(330,70,10,5,0,0,7);x.fill();
+ x.strokeStyle='rgba(30,18,8,.6)';x.lineWidth=5;x.strokeRect(2,2,416,100);
+ [[18,20],[402,20]].forEach(([px,py])=>{x.fillStyle='#3a3836';x.beginPath();x.arc(px,py,6,0,7);x.fill();x.fillStyle='#8a8680';x.beginPath();x.arc(px-1.5,py-1.5,2.5,0,7);x.fill()});
+ x.textAlign='center';x.textBaseline='middle';let fs=58;do{x.font=`${fs}px "IM Fell English", Georgia, serif`;fs-=2}while(x.measureText(n.title).width>360&&fs>30);
+ x.fillStyle='rgba(20,10,4,.55)';x.fillText(n.title,212,57);x.fillStyle='#f0e2c0';x.fillText(n.title,210,54); // burned-in lettering with a light face
+ if(n.tex)n.tex.needsUpdate=true}
+function drawNote(n){if(n.kind==='plank')return drawPlank(n);const c=n.cv||(n.cv=document.createElement('canvas'));c.width=200;c.height=240;const x=c.getContext('2d');
  const g=x.createLinearGradient(0,0,0,240);g.addColorStop(0,'#eadfc0');g.addColorStop(1,'#cdb98a');x.fillStyle=g;x.fillRect(0,0,200,240);for(let k=0;k<5;k++){x.fillStyle='rgba(120,80,30,.07)';x.beginPath();x.arc(Math.random()*200,Math.random()*240,10+Math.random()*30,0,7);x.fill()}x.strokeStyle='rgba(90,60,30,.25)';x.lineWidth=6;x.strokeRect(0,0,200,240);
  x.fillStyle='#cdbf98';x.beginPath();x.moveTo(200,214);x.lineTo(174,240);x.lineTo(200,240);x.fill();
  x.fillStyle='rgba(60,40,20,.25)';x.beginPath();x.arc(103,25,8,0,7);x.fill();const p=x.createRadialGradient(97,19,1,100,22,7);p.addColorStop(0,'#c8c4bc');p.addColorStop(.6,'#7a7670');p.addColorStop(1,'#3e3b38');x.fillStyle=p;x.beginPath();x.arc(100,22,6,0,7);x.fill();x.fillStyle='rgba(120,70,30,.35)';x.fillRect(95,27,10,3);
@@ -538,14 +554,17 @@ function drawNote(n){const c=n.cv||(n.cv=document.createElement('canvas'));c.wid
  if(n.tex)n.tex.needsUpdate=true}
 const noteLayer=document.getElementById('notes3d');
 NOTES.forEach(n=>{drawNote(n);n.tex=new THREE.CanvasTexture(n.cv);
- n.mesh=new THREE.Mesh(new THREE.PlaneGeometry(2.05,2.46),new THREE.MeshLambertMaterial({map:n.tex}));
- n.hang=new THREE.Group();n.hang.position.set(n.x,n.y+1.03,.36);n.hang.rotation.z=n.r;board.add(n.hang);n.mesh.position.y=-1.03;n.hang.add(n.mesh);
+ n.w=n.w||2.05;n.h=n.h||2.46;const top=n.kind==='plank'?.75:n.h*.42;n.top=top;
+ n.mesh=new THREE.Mesh(new THREE.PlaneGeometry(n.w,n.h),new THREE.MeshLambertMaterial({map:n.tex}));
+ n.hang=new THREE.Group();n.hang.position.set(n.x,n.y+top,.36);n.hang.rotation.z=n.r;board.add(n.hang);n.mesh.position.y=-top;n.hang.add(n.mesh);
+ if(n.kind==='plank'){const rope=new THREE.MeshLambertMaterial({color:'#8a7a5c'});[-1,1].forEach(sd=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,top,6),rope);r.position.set(sd*n.w*.42,-top/2+.02,-.02);n.hang.add(r)})}
  const a=document.createElement('a');a.href=n.href;if(!n.href.startsWith('mailto'))a.target='_blank';a.rel='noopener';a.className='hot';a.setAttribute('aria-label',n.title);
+ if(n.kind==='plank')a.removeAttribute('target');
  a.onmouseenter=a.onfocus=()=>{if(!n.hover)n.wig=performance.now()/1000;n.hover=1};a.onmouseleave=a.onblur=()=>n.hover=0;noteLayer.appendChild(a);n.a=a});
 document.fonts&&Promise.all([document.fonts.load('46px "IM Fell English"')]).then(()=>NOTES.forEach(drawNote)).catch(()=>{});
 const pv=new THREE.Vector3();
 function placeAnchors(){const r=cv.getBoundingClientRect();NOTES.forEach(n=>{
- let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;[[-1.03,-1.23],[1.03,-1.23],[-1.03,1.23],[1.03,1.23]].forEach(([a,b])=>{pv.set(a,b,0);n.mesh.localToWorld(pv);pv.project(cam);
+ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{pv.set(a*n.w/2,b*n.h/2,0);n.mesh.localToWorld(pv);pv.project(cam);
   const sx=(pv.x+1)/2*r.width,sy=(1-pv.y)/2*r.height;x0=Math.min(x0,sx);x1=Math.max(x1,sx);y0=Math.min(y0,sy);y1=Math.max(y1,sy)});
  Object.assign(n.a.style,{left:x0+'px',top:y0+'px',width:(x1-x0)+'px',height:(y1-y0)+'px'})})}
 
@@ -704,7 +723,7 @@ function boardFrame(TT){const lt=boardT;
  cam.position.set(BRD.x+Math.sin(lt*.4)*.06,cy+.5+(1-e)*1.5+Math.sin(lt*.5)*.04,BRD.z+d);cam.lookAt(BRD.x,cy,BRD.z);
  const now=performance.now()/1000;
  // each note has its own one-shot wiggle: amplitude, speed, damping, and how much it twists vs swings
- const WIG=[{a:.09,f:7,d:2.8,tw:0},{a:-.07,f:8.5,d:3.2,tw:.15},{a:.12,f:5.5,d:2.4,tw:.08}];
+ const WIG=[{a:.09,f:7,d:2.8,tw:0},{a:-.07,f:8.5,d:3.2,tw:.15},{a:.12,f:5.5,d:2.4,tw:.08},{a:.06,f:4.5,d:2.2,tw:0}];
  NOTES.forEach((n,i)=>{const t=n.hover?1:0;n.k=(n.k||0)+(t-(n.k||0))*.14;
   const w=WIG[i],dt=n.wig!=null?now-n.wig:99,e=Math.exp(-dt*w.d),sw=dt<2?w.a*e*Math.sin(dt*w.f):0;
   n.hang.rotation.z=n.r+sw;n.hang.rotation.y=sw*w.tw;n.hang.rotation.x=-n.k*.18;n.hang.position.z=.36+n.k*.08});
@@ -736,6 +755,7 @@ function boardFrame(TT){const lt=boardT;
 })();
 </script>
 <script>
+if(matchMedia('(prefers-reduced-motion: reduce)').matches&&location.hash!=='#play'&&location.hash!=='#dev')location.replace('/work/');
 if(location.hash==='#dev')document.documentElement.classList.add('dev');
 (()=>{const n=document.getElementById('noise'),x=n.getContext('2d');n.width=160;n.height=120;const im=x.createImageData(160,120);
  (function f(){const d=im.data;for(let i=0;i<d.length;i+=4){const v=Math.random()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}x.putImageData(im,0,0);setTimeout(()=>requestAnimationFrame(f),80)})()})();
