@@ -122,15 +122,15 @@ const PX=1;
 const cv=document.getElementById('c');
 let R;try{R=new THREE.WebGLRenderer({canvas:cv,antialias:false})}catch(e){document.getElementById('fallback').style.display='flex';return}R.setPixelRatio(1);
 const S=new THREE.Scene();
-const fogC=new THREE.Color('#a8979f');S.background=fogC;S.fog=new THREE.Fog(fogC,50,330);
+const fogC=new THREE.Color('#86686f');S.background=fogC;S.fog=new THREE.Fog(fogC,50,330);
 const cam=new THREE.PerspectiveCamera(50,1,.1,900);
 function size(){R.setSize(Math.ceil(innerWidth/PX),Math.ceil(innerHeight/PX),false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
 addEventListener('resize',size);size();
 
-// night sky dome
+// dusk sky dome: dusty rose horizon to deep violet overhead
 const dome=new THREE.Mesh(new THREE.SphereGeometry(600,16,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,
  vertexShader:'varying float h;void main(){h=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
- fragmentShader:'varying float h;void main(){vec3 a=vec3(.8,.68,.7),b=vec3(.62,.56,.68),c=vec3(.34,.32,.5);vec3 col=mix(a,b,smoothstep(0.,.18,h));col=mix(col,c,smoothstep(.18,.75,h));gl_FragColor=vec4(col,1.);}'}));
+ fragmentShader:'varying float h;void main(){vec3 a=vec3(.62,.45,.47),b=vec3(.38,.31,.45),c=vec3(.13,.12,.25);vec3 col=mix(a,b,smoothstep(0.,.18,h));col=mix(col,c,smoothstep(.18,.75,h));gl_FragColor=vec4(col,1.);}'}));
 S.add(dome);
 // stars
 const sv=[];for(let i=0;i<500;i++){const th=Math.random()*6.283,ph=Math.random()*1.3+.1;sv.push(Math.cos(th)*Math.cos(ph)*550,Math.sin(ph)*550,Math.sin(th)*Math.cos(ph)*550)}
@@ -146,8 +146,8 @@ halo.position.z=-1;moon.add(halo);
 [[-6,5,4],[7,-4,3],[-3,-8,3.2]].forEach(([x,y,r])=>{const m=new THREE.Mesh(new THREE.CircleGeometry(r,12),new THREE.MeshBasicMaterial({color:'#d8d2b8',fog:false}));m.position.set(x,y,.1);moon.add(m)});
 moon.scale.setScalar(2);S.add(moon);
 
-S.add(new THREE.HemisphereLight('#e8d8e6','#3a3428',.75));
-const ml=new THREE.DirectionalLight('#ffe6d6',.7);S.add(ml);S.add(ml.target);
+S.add(new THREE.HemisphereLight('#b8a2c2','#2c2622',.7));
+const ml=new THREE.DirectionalLight('#ffcfb0',.62);S.add(ml);S.add(ml.target);
 
 // terrain with a featured hill
 const HILL={x:0,z:0};
@@ -342,7 +342,7 @@ const MIST=[];{castle.updateMatrixWorld(true);const ctr=castle.localToWorld(new 
 function swirlMist(T){MIST.forEach(m=>{const a=m.a+T*m.sp2;m.sp.position.set(m.ctr.x+Math.cos(a)*m.r,m.ctr.y+m.h+Math.sin(T*.3+m.ph)*m.bob,m.ctr.z+Math.sin(a)*m.r*.8);
  m.sp.material.opacity=.28+.18*Math.sin(T*.5+m.ph)})}
 const SKYMIST=[];{const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');
- for(let i=0;i<7;i++){const cx=20+Math.random()*88,cy=24+Math.random()*16,r=14+Math.random()*16,g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'rgba(222,226,232,.45)');g.addColorStop(1,'rgba(222,226,232,0)');x.fillStyle=g;x.fillRect(0,0,128,64)}
+ for(let i=0;i<7;i++){const cx=20+Math.random()*88,cy=24+Math.random()*16,r=14+Math.random()*16,g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'rgba(206,194,214,.42)');g.addColorStop(1,'rgba(206,194,214,0)');x.fillStyle=g;x.fillRect(0,0,128,64)}
  const t=new THREE.CanvasTexture(c);
  for(let i=0;i<26;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,fog:false,opacity:.0}));
   const w=70+Math.random()*120;sp.scale.set(w,w*.28,1);sp.visible=false;S.add(sp);

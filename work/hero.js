@@ -237,7 +237,7 @@
       f.sp.position.set(f.home.x + Math.sin(f.a) * 1.3 + Math.sin(f.b * 1.7) * .5, f.home.y + Math.sin(f.b) * .6, f.home.z + Math.cos(f.a * .8) * 1.1);
       f.sp.material.opacity = Math.max(.08, Math.pow(Math.max(0, Math.sin(t * f.rate + f.ph)), 3));
     });
-    if (!day) { warm.position.copy(FLIES[0].sp.position); warm.intensity = .6 * FLIES[0].sp.material.opacity; }
+    warm.position.copy(FLIES[0].sp.position); warm.intensity = .6 * FLIES[0].sp.material.opacity;
     R.render(S, cam);
     requestAnimationFrame(frame);
   }
@@ -252,20 +252,5 @@
     new IntersectionObserver(es => { visible = es[0].isIntersecting; visible && !document.hidden ? start() : stop(); }).observe(wrap);
     document.addEventListener('visibilitychange', () => { document.hidden ? stop() : visible && start(); });
   }
-  // --- light mode: daytime sky, warm sun, no fireflies ---
-  const NIGHT = { bg: 0x1c1820, fog: 0x241d2c, near: 9, far: 34, hs: 0x8c86b8, hg: 0x1a1712, hi: .95, sc: 0xc9d4ff, si: .75, sp: [-6, 10, 4] };
-  const DAY = { bg: 0xbcd0d8, fog: 0xc6d3cf, near: 12, far: 42, hs: 0xe6eeff, hg: 0x5a4a32, hi: 1.05, sc: 0xfff0d2, si: 1.0, sp: [6, 12, 6] };
-  let day = false;
-  function applyTheme() {
-    day = (window.currentTheme ? window.currentTheme() : 'dark') === 'light';
-    const L = day ? DAY : NIGHT;
-    R.setClearColor(L.bg); S.fog.color.setHex(L.fog); S.fog.near = L.near; S.fog.far = L.far;
-    hemi.color.setHex(L.hs); hemi.groundColor.setHex(L.hg); hemi.intensity = L.hi;
-    moon.color.setHex(L.sc); moon.intensity = L.si; moon.position.set(...L.sp);
-    FLIES.forEach(f => { f.sp.visible = !day; }); warm.visible = !day;
-    if (!running) R.render(S, cam);
-  }
-  document.addEventListener('themechange', applyTheme);
-  applyTheme();
   wrap.classList.add('ready');
 })();
