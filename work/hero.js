@@ -59,14 +59,8 @@
   }
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
-  [[-3.4, -1.5, .5], [5.6, -2.8, .7], [-1.2, 2.2, .3]].forEach(([x, z, s]) => S.add(mk(new THREE.DodecahedronGeometry(1, 0), rockM, x, s * .4, z, s, s * .7, s)));
-  S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 4.9, .25, .9));
-
-  // foreground trunks: big, close to the camera, partly out of frame
-  const FG = [];
-  [[-3.9, 3.4, .5], [4.3, 2.8, .62], [-6.2, 1.2, .45], [6.6, .6, .5]].forEach(([x, z, r]) => {
-    const t = mk(new THREE.CylinderGeometry(r * .9, r * 1.15, 14, 7), barkM, x, 6, z); S.add(t); FG.push(t);
-  });
+  [[-3.4, -1.5, .5], [7.4, -3.4, .7], [-1.6, 2.6, .3]].forEach(([x, z, s]) => S.add(mk(new THREE.DodecahedronGeometry(1, 0), rockM, x, s * .4, z, s, s * .7, s)));
+  S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
 
   // --- the goat, built exactly as in the intro ---
   const fur = new THREE.MeshLambertMaterial({ color: '#26222a', flatShading: true });
@@ -157,6 +151,8 @@
     nav.addEventListener('focusin', () => { if (navPtr === null) navPtr = 0; });
     nav.addEventListener('focusout', () => { navPtr = null; });
   }
+  // the clearing he can wander: not back into the treeline, not off the sides
+  const PEN = { x0: -4.5, x1: 6.2, z0: -2.2, z1: 3 };
   const WALK_RADIUS = 4.5, walkTo = new THREE.Vector3(); let walking = false, walkPh = 0;
   let nextBlink = 2, blinkT = -1, down = 1, yaw = 0, lift = 0;
   const lerp = (a, b, k) => a + (b - a) * k, sstep = x => x * x * (3 - 2 * x);
@@ -208,7 +204,7 @@
     ray.setFromCamera(ndc, cam);
     if (!ray.ray.intersectPlane(floor, hit)) return;
     if (hit.distanceTo(HOME) > WALK_RADIUS) return;
-    walkTo.copy(hit); walking = true;
+    walkTo.set(Math.max(PEN.x0, Math.min(PEN.x1, hit.x)), 0, Math.max(PEN.z0, Math.min(PEN.z1, hit.z))); walking = true;
   });
   // show a pointer cursor over ground he can walk to
   wrap.addEventListener('pointermove', e => {
@@ -219,14 +215,8 @@
     wrap.style.cursor = ray.ray.intersectPlane(floor, hit) && hit.distanceTo(HOME) <= WALK_RADIUS ? 'pointer' : '';
   });
 
-  // --- camera: ease toward the mouse while it's over the scene, drift gently otherwise ---
-  const tgt = { x: 0, y: 0 }, cur = { x: 0, y: 0 }; let hovering = false;
-  wrap.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse') return;
-    const r = wrap.getBoundingClientRect(); hovering = true;
-    tgt.x = ((e.clientX - r.left) / r.width) * 2 - 1; tgt.y = ((e.clientY - r.top) / r.height) * 2 - 1;
-  });
-  wrap.addEventListener('pointerleave', () => { hovering = false; });
+  // --- camera: a very slow, small drift so the scene feels alive ---
+  const cur = { x: 0, y: 0 };
 
   function size() {
     const w = wrap.clientWidth, h = wrap.clientHeight; R.setSize(w, h, false);
@@ -239,8 +229,7 @@
     if (!running) return;
     now /= 1000; const dt = Math.min(.05, now - last); last = now; t += dt;
     idle(t, dt);
-    if (!hovering) { tgt.x = Math.sin(t * .13) * .35; tgt.y = Math.sin(t * .09) * .2; }
-    cur.x += (tgt.x - cur.x) * Math.min(1, dt * 2.5); cur.y += (tgt.y - cur.y) * Math.min(1, dt * 2.5);
+    cur.x = Math.sin(t * .11) * .15; cur.y = Math.sin(t * .08) * .08;
     cam.position.set(camBase.x + cur.x * 1.6, camBase.y - cur.y * .6, camBase.z);
     cam.lookAt(look.x + cur.x * .5, look.y - cur.y * .2, look.z);
     FLIES.forEach(f => {
