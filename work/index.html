@@ -39,6 +39,14 @@
   nav.top a.play{color:var(--gold)}
   @media (max-width:640px){nav.top a:not(.play){display:none}}
 
+  /* 3D hero banner */
+  .hero3d{position:relative;height:clamp(240px,40vw,440px);background:#1c1820;overflow:hidden}
+  .hero3d canvas{display:block;width:100%;height:100%;opacity:0;transition:opacity .8s ease}
+  .hero3d.ready canvas{opacity:1}
+  .hero3d::after{content:"";position:absolute;inset:auto 0 0 0;height:38%;background:linear-gradient(to bottom,rgba(28,24,32,0),var(--bg));pointer-events:none}
+  @media (prefers-reduced-motion:reduce){.hero3d canvas{transition:none}}
+  .hero3d + .hero{padding-top:36px}
+
   /* hero */
   .hero{padding-top:72px;padding-bottom:48px}
   .hero h1,section h2{font-family:"Germania One","IM Fell English",Georgia,serif;letter-spacing:.01em}
@@ -118,6 +126,7 @@
 </header>
 
 <main id="main">
+  <div class="hero3d" id="hero3d" aria-hidden="true"><canvas></canvas></div>
   <div class="wrap hero">
     <h1>Matthew Szklarz</h1>
     <p class="role">Frontend developer · Boston, MA</p>
@@ -218,5 +227,7 @@
     <span><a href="mailto:mszklarz@gmail.com">Email</a> · <a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a></span>
   </div>
 </footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+<script src="hero.js" defer></script>
 </body>
 </html>
