@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Work — Matthew Szklarz, Frontend Developer</title>
 <meta name="description" content="Matthew Szklarz is a frontend developer who makes websites fast, accessible, and a little bit delightful. Selected work, skills, and experience.">
@@ -40,10 +41,10 @@
   @media (max-width:640px){nav.top a:not(.play){display:none}}
 
   /* 3D hero banner */
-  .hero3d{position:relative;height:clamp(240px,40vw,440px);background:#1c1820;overflow:hidden}
+  .hero3d{position:relative;height:clamp(240px,40vw,440px);background:var(--bg);overflow:hidden}
   .hero3d canvas{display:block;width:100%;height:100%;opacity:0;transition:opacity .8s ease}
   .hero3d.ready canvas{opacity:1}
-  .hero3d::after{content:"";position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(to bottom,rgba(28,24,32,0),var(--bg));pointer-events:none}
+  .hero3d::after{content:"";position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none}
   @media (prefers-reduced-motion:reduce){.hero3d canvas{transition:none}}
   .hero3d + .hero{position:relative;z-index:1;margin-top:-4rem;padding-top:0;pointer-events:none}
   .hero3d + .hero .links,.hero3d + .hero .lead,.hero3d + .hero .role,.hero3d + .hero .avail{pointer-events:auto} /* the title lets clicks through to the ground */
@@ -108,6 +109,20 @@
 
   footer{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--muted);font-size:.92rem}
   footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
+
+  /* light mode: follows the system unless the visitor picks one */
+  :root[data-theme="light"]{ --bg:#f3eee2; --bg2:#e9e2d1; --card:#fbf7ee; --line:#d6cab0;
+    --ink:#2a1e14; --muted:#6a5844; --gold:#9c6c12; --red:#b51f24; }
+  @media (prefers-color-scheme:light){ :root:not([data-theme="dark"]){ --bg:#f3eee2; --bg2:#e9e2d1; --card:#fbf7ee; --line:#d6cab0;
+    --ink:#2a1e14; --muted:#6a5844; --gold:#9c6c12; --red:#b51f24; } }
+  :root[data-theme="light"] a:hover{color:#6e4a08}
+  @media (prefers-color-scheme:light){ :root:not([data-theme="dark"]) a:hover{color:#6e4a08} }
+  /* gold buttons stay bright gold in both modes */
+  .btn.primary{background:#e7b84a;border-color:#e7b84a;color:#1c1820}
+  :root[data-theme="light"] .card,:root[data-theme="light"] .note{box-shadow:0 6px 18px rgba(60,40,20,.16)} :root[data-theme="light"] .card:hover{box-shadow:0 12px 26px rgba(60,40,20,.22)} :root[data-theme="light"] .reel video{box-shadow:0 12px 28px rgba(60,40,20,.2)}
+  @media (prefers-color-scheme:light){ :root:not([data-theme="dark"]) .card,:root:not([data-theme="dark"]) .note{box-shadow:0 6px 18px rgba(60,40,20,.16)} :root:not([data-theme="dark"]) .card:hover{box-shadow:0 12px 26px rgba(60,40,20,.22)} :root:not([data-theme="dark"]) .reel video{box-shadow:0 12px 28px rgba(60,40,20,.2)} }
+  .theme-btn{background:none;border:1px solid var(--line);border-radius:99px;color:var(--ink);width:32px;height:32px;margin-left:18px;font-size:1rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+  .theme-btn:hover{border-color:var(--gold)}
 </style>
 </head>
 <body>
@@ -123,6 +138,7 @@
       <a href="#skills">Skills</a>
       <a href="#experience">Experience</a>
       <a class="play" href="/#play">▶ Play the intro</a>
+      <button class="theme-btn" type="button" aria-label="Switch to light mode">☀</button>
     </nav>
   </div>
 </header>
@@ -156,9 +172,8 @@
           <div class="body">
             <h3><a class="cardlink" href="press-start/">Press Start</a></h3>
             <p class="meta">Personal project · 2026</p>
-            <p>An interactive 3D title screen: a black goat roams a Carpathian landscape, and an in-world notice board holds the links.</p>
-            <p class="aside">First project after a break from work, so naturally I took inspiration from my favorite hero — he took seven years off and came back just fine.</p>
-            <ul class="tags"><li>Art direction</li><li>AI collaboration</li><li>three.js</li><li>Web Audio</li></ul>
+            <p>A 3D attract-mode title screen with a roaming goat and a menu built into the world.</p>
+            <ul class="tags"><li>Art direction</li><li>AI collaboration</li><li>three.js</li></ul>
           </div>
         </article>
         <article class="card">
@@ -166,9 +181,9 @@
           <div class="body">
             <h3><a class="cardlink" href="hals-big-dig/">Hal's Big Dig</a></h3>
             <p class="meta">CloudKid for PBS KIDS · <em>Nature Cat</em></p>
-            <p>A fast arcade fossil dig. I pitched the concept and programmed it: auto-firing power-ups, tuned drop rates, and a trophy room where kids assemble the dinosaurs they dig up.</p>
+            <p>A fast arcade fossil dig I pitched and programmed.</p>
             <p class="aside">Still live on PBS KIDS, ten years on!</p>
-            <ul class="tags"><li>Game design</li><li>HTML5</li><li>JavaScript</li><li>SpringRoll</li></ul>
+            <ul class="tags"><li>Game design</li><li>HTML5</li><li>SpringRoll</li></ul>
           </div>
         </article>
       </div>
@@ -231,5 +246,6 @@
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 <script src="hero.js" defer></script>
+<script src="theme.js"></script>
 </body>
 </html>
