@@ -124,7 +124,7 @@ To use a custom domain:
 index.html                 # the 3D intro: markup, styles, scene, audio and UI
 work/index.html            # plain portfolio page: selected work, skills, experience
 work/images/               # project card images
-work/press-start/          # Press Start (this intro) case study: page and scene captures
+work/press-start/          # Press Start (this intro) case study: page and captures
 work/hals-big-dig/         # Hal's Big Dig case study: page, reel and stills
 preview.command            # double-click local preview (Mac)
 CNAME

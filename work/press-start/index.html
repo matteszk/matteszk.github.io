@@ -46,8 +46,6 @@
   .kicker{color:var(--gold);font-size:.95rem;letter-spacing:.04em;margin:0 0 8px}
   .intro h1{font-size:clamp(2.8rem,7.5vw,4.4rem)}
   .intro .lead{font-size:1.18rem;max-width:40em;margin:14px 0 26px}
-  .scenes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:22px 0 0;padding:0;list-style:none}
-  .scenes li{margin:0}.scenes img{width:100%;height:auto;display:block;border-radius:4px;border:1px solid var(--line)}.scenes b{display:block;margin-top:6px;font-weight:600}.scenes span{color:var(--muted);font-size:.88rem}
   .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 24px;margin:0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
   .facts dt{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
   .facts dd{margin:2px 0 0;font-weight:500}
@@ -143,19 +141,6 @@
       <p>That made it a real test of working with AI as a creative tool. Every model, texture and sound is generated in code at runtime, so there are no image, model or audio files to lean on. Everything on screen had to be described, generated, looked at, and revised.</p>
     </section>
 
-    <section aria-labelledby="h-scenes">
-      <h2 id="h-scenes">Six shots</h2>
-      <p>The attract loop cuts between six shots with fades, like a game's intro film.</p>
-      <ul class="scenes">
-        <li><img src="moon-ridge.jpg" alt="" width="1440" height="810" loading="lazy"><b>1 · Moon ridge</b><span>The goat prances along a crest as a full moon sinks.</span></li>
-        <li><img src="village.jpg" alt="" width="1440" height="810" loading="lazy"><b>3 · Village</b><span>A tracking shot past log cabins and a cabbage garden.</span></li>
-        <li><img src="apple-orchard.jpg" alt="" width="1440" height="810" loading="lazy"><b>4 · Apple orchard</b><span>The goat grazes from a tipped barrel as the camera cranes down.</span></li>
-        <li><img src="mountains.jpg" alt="" width="1440" height="810" loading="lazy"><b>5 · Mountains</b><span>A gallop toward a snow-capped range.</span></li>
-        <li><img src="castle.jpg" alt="" width="1440" height="810" loading="lazy"><b>6 · Castle</b><span>A castle inspired by Bran Castle, with bats circling the tower.</span></li>
-      </ul>
-      <p style="margin-top:18px">Shot 2, not pictured, is a high orbiting sweep over the fields.</p>
-    </section>
-
     <section aria-labelledby="h-board">
       <h2 id="h-board">A menu inside the world</h2>
       <p>Press start and the camera glides to a rustic notice board. The board is part of the 3D scene, not an overlay. Its notes are real links, positioned every frame over the 3D note meshes, so they work with a mouse, touch and keyboard.</p>
@@ -169,7 +154,6 @@
     <section aria-labelledby="h-details">
       <h2 id="h-details">Details</h2>
       <ul>
-        <li><b>The goat</b> is built from jointed box primitives, with per-leg timing for a lope, a stiff-legged prance and a grazing idle.</li>
         <li><b>Sound is synced to motion.</b> Hoofbeats are synthesized per footfall and panned by where the goat is on screen. When he sleeps, one breathing animation drives both his body and his snore.</li>
         <li><b>An original score</b> for cimbalom and an ocarina-style flute, generated with the Web Audio API. Sound stays off until the visitor turns it on.</li>
         <li><b>No clipping.</b> Props near the goat's path are removed at load, so he never runs through trees, rocks or houses.</li>
