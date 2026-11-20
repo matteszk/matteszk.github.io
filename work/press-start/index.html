@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Press Start — Matthew Szklarz, Frontend Developer</title>
+<meta name="description" content="Case study: Press Start, the 3D attract-mode intro on Matthew Szklarz's portfolio. Art-directed by Matthew, coded by Claude, an AI model.">
+<meta property="og:title" content="Press Start — Matthew Szklarz">
+<meta property="og:description" content="A late-90s-style 3D title screen for my portfolio, art-directed with an AI collaborator.">
+<meta property="og:image" content="https://matthewszklarz.com/work/press-start/moon-ridge.jpg">
+<meta name="theme-color" content="#1c1820">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231c1820'/%3E%3Cpath d='M9 9c1-4 4-5 5-3M23 9c-1-4-4-5-5-3' stroke='%23c4b38e' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Cellipse cx='16' cy='17' rx='6' ry='7' fill='%23e8e2d8'/%3E%3Ccircle cx='13.5' cy='16' r='1.2' fill='%231c1820'/%3E%3Ccircle cx='18.5' cy='16' r='1.2' fill='%231c1820'/%3E%3Cpath d='M16 24v4' stroke='%23e8e2d8' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=Germania+One&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1c1820; --bg2:#25202a; --card:#2b2530; --line:#3e3546;
+    --ink:#f1e8d2; --muted:#b9ad98; --gold:#e7b84a; --red:#d42a2e;
+    --paper:#e9dfc4; --paperInk:#2a1e14;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--gold);text-underline-offset:3px}
+  a:hover{color:#f3cf74}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:3px}
+  h1,h2,h3{font-family:"Germania One","IM Fell English",Georgia,serif;font-weight:400;line-height:1.15;margin:0;letter-spacing:.01em}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  .narrow{max-width:720px}
+  .skip{position:absolute;left:-999px;top:8px;background:var(--gold);color:#1c1820;padding:8px 12px;border-radius:4px;z-index:10}
+  .skip:focus{left:8px}
+
+  /* header (matches /work) */
+  header.top{border-bottom:1px solid var(--line);background:var(--bg2)}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:"IM Fell English",Georgia,serif;font-size:1.15rem}
+  .brand svg{width:28px;height:28px;flex:none}
+  nav.top a{color:var(--muted);text-decoration:none;font-size:.92rem;margin-left:20px}
+  nav.top a:hover{color:var(--ink)}
+  nav.top a.play{color:var(--gold)}
+  @media (max-width:640px){nav.top a:not(.play){display:none}}
+
+  /* intro */
+  .back{display:inline-block;margin-top:36px;color:var(--muted);text-decoration:none;font-size:.92rem}
+  .back:hover{color:var(--ink)}
+  .intro{padding:18px 0 32px}
+  .kicker{color:var(--gold);font-size:.95rem;letter-spacing:.04em;margin:0 0 8px}
+  .intro h1{font-size:clamp(2.8rem,7.5vw,4.4rem)}
+  .intro .lead{font-size:1.18rem;max-width:40em;margin:14px 0 26px}
+  .scenes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:22px 0 0;padding:0;list-style:none}
+  .scenes li{margin:0}.scenes img{width:100%;height:auto;display:block;border-radius:4px;border:1px solid var(--line)}.scenes b{display:block;margin-top:6px;font-weight:600}.scenes span{color:var(--muted);font-size:.88rem}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 24px;margin:0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .facts dt{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .facts dd{margin:2px 0 0;font-weight:500}
+
+  /* reel */
+  .reel{margin:34px auto 0}
+  .reel video{width:100%;display:block;border-radius:6px;background:#000;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .reel p{color:var(--muted);font-size:.9rem;text-align:center;margin:10px 0 0}
+  .links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:22px 0 0}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line);border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500;font-size:.95rem;background:var(--card)}
+  .btn:hover{border-color:var(--gold);color:var(--ink)}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#1c1820}
+  .btn.primary:hover{background:#f3cf74;color:#1c1820}
+
+  /* story */
+  section{padding:44px 0;border-top:1px solid var(--line);margin-top:44px}
+  section + section{margin-top:0}
+  section h2{font-size:2rem;margin-bottom:16px}
+  section p{margin:0 0 14px}
+  figure{margin:26px 0 6px}
+  figure img{width:100%;height:auto;display:block;border-radius:4px;border:1px solid var(--line)}
+  figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .pair figure{margin-top:26px}
+  @media (max-width:640px){.pair{grid-template-columns:1fr}}
+  /* aged-paper pull quote, like the work cards */
+  .note{background:var(--paper);color:var(--paperInk);border-radius:3px;padding:18px 22px;margin:26px 0;box-shadow:0 10px 24px rgba(0,0,0,.35);
+    background-image:radial-gradient(ellipse at 20% 15%,rgba(120,80,30,.10),transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(120,80,30,.12),transparent 50%);
+    font-family:"IM Fell English",Georgia,serif;font-size:1.3rem;line-height:1.35}
+
+  .next{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  footer{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--muted);font-size:.92rem;margin-top:44px}
+  footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
+  footer small{display:block;width:100%;font-size:.82rem;opacity:.8}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/#play" aria-label="Matthew Szklarz — play the intro">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#2b2530"/><path d="M9 9c1-4 4-5 5-3M23 9c-1-4-4-5-5-3" stroke="#c4b38e" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="16" cy="17" rx="6" ry="7" fill="#e8e2d8"/><circle cx="13.5" cy="16" r="1.2" fill="#1c1820"/><circle cx="18.5" cy="16" r="1.2" fill="#1c1820"/><path d="M16 24v4" stroke="#e8e2d8" stroke-width="2"/></svg>
+      Matthew Szklarz
+    </a>
+    <nav class="top" aria-label="Site">
+      <a href="/work/#projects">Work</a>
+      <a href="/work/#skills">Skills</a>
+      <a href="/work/#experience">Experience</a>
+      <a class="play" href="/#play">▶ Play the intro</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap narrow">
+    <a class="back" href="/work/#projects">← Selected work</a>
+    <div class="intro">
+      <p class="kicker">Case study · Personal project · 2026</p>
+      <h1>Press Start</h1>
+      <p class="lead">The 3D title screen on the front of this site. A black goat roams a Carpathian landscape in an attract-mode loop, and when you press start, the camera glides to a notice board in the world that holds my links.</p>
+      <dl class="facts">
+        <div><dt>Type</dt><dd>Personal project</dd></div>
+        <div><dt>My role</dt><dd>Concept, art direction</dd></div>
+        <div><dt>Code</dt><dd>Written by Claude, an AI model</dd></div>
+        <div><dt>Built with</dt><dd>three.js, Web Audio, Canvas 2D</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="reel">
+      <figure style="margin:0"><img src="moon-ridge.jpg" alt="The goat silhouetted on a grassy ridge under a full moon, with PRESS START in red below" width="1440" height="810"></figure>
+      <p>The opening shot: the moon ridge.</p>
+      <div class="links">
+        <a class="btn primary" href="/#play">▶ Play the intro</a>
+        <a class="btn" href="https://github.com/matteszk/matteszk.github.io">View the code</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap narrow">
+    <section aria-labelledby="h-idea">
+      <h2 id="h-idea">The idea</h2>
+      <p>This was my first project after a break from work, and I wanted the front door of my portfolio to feel like turning on an old console: a looping film that plays until you press start. The look comes from the attract screens of late-90s 3D games, with soft, low-contrast textures, fog, and a light CRT overlay.</p>
+      <p>The hero is a black mountain goat. He gallops, prances, grazes and naps his way through a Carpathian landscape while the camera cuts between shots.</p>
+    </section>
+
+    <section aria-labelledby="h-ai">
+      <h2 id="h-ai">Directing an AI collaborator</h2>
+      <p>I built this with Claude, an AI model, and I want to be clear about who did what. I art-directed it: the concept, the scenes, the look and sound, and many rounds of revisions. The code is AI-written. I'm not claiming three.js skills I don't have yet.</p>
+      <p class="note">My job was the vision and the feedback loop: deciding what each shot should feel like, and pushing until it did.</p>
+      <p>That made it a real test of working with AI as a creative tool. Every model, texture and sound is generated in code at runtime, so there are no image, model or audio files to lean on. Everything on screen had to be described, generated, looked at, and revised.</p>
+    </section>
+
+    <section aria-labelledby="h-scenes">
+      <h2 id="h-scenes">Six shots</h2>
+      <p>The attract loop cuts between six shots with fades, like a game's intro film.</p>
+      <ul class="scenes">
+        <li><img src="moon-ridge.jpg" alt="" width="1440" height="810" loading="lazy"><b>1 · Moon ridge</b><span>The goat prances along a crest as a full moon sinks.</span></li>
+        <li><img src="village.jpg" alt="" width="1440" height="810" loading="lazy"><b>3 · Village</b><span>A tracking shot past log cabins and a cabbage garden.</span></li>
+        <li><img src="apple-orchard.jpg" alt="" width="1440" height="810" loading="lazy"><b>4 · Apple orchard</b><span>The goat grazes from a tipped barrel as the camera cranes down.</span></li>
+        <li><img src="mountains.jpg" alt="" width="1440" height="810" loading="lazy"><b>5 · Mountains</b><span>A gallop toward a snow-capped range.</span></li>
+        <li><img src="castle.jpg" alt="" width="1440" height="810" loading="lazy"><b>6 · Castle</b><span>A castle inspired by Bran Castle, with bats circling the tower.</span></li>
+      </ul>
+      <p style="margin-top:18px">Shot 2, not pictured, is a high orbiting sweep over the fields.</p>
+    </section>
+
+    <section aria-labelledby="h-board">
+      <h2 id="h-board">A menu inside the world</h2>
+      <p>Press start and the camera glides to a rustic notice board. The board is part of the 3D scene, not an overlay. Its notes are real links, positioned every frame over the 3D note meshes, so they work with a mouse, touch and keyboard.</p>
+      <figure>
+        <img src="notice-board.jpg" alt="A wooden notice board in the 3D landscape with pinned notes for LinkedIn, GitHub and Email me, and a Portfolio sign" width="1440" height="810" loading="lazy">
+        <figcaption>The notice board, with the goat in the foreground.</figcaption>
+      </figure>
+      <p>The board camera is responsive too. Its distance is worked out from the field of view and the window's shape, so the board and the goat stay framed on any screen.</p>
+    </section>
+
+    <section aria-labelledby="h-details">
+      <h2 id="h-details">Details</h2>
+      <ul>
+        <li><b>The goat</b> is built from jointed box primitives, with per-leg timing for a lope, a stiff-legged prance and a grazing idle.</li>
+        <li><b>Sound is synced to motion.</b> Hoofbeats are synthesized per footfall and panned by where the goat is on screen. When he sleeps, one breathing animation drives both his body and his snore.</li>
+        <li><b>An original score</b> for cimbalom and an ocarina-style flute, generated with the Web Audio API. Sound stays off until the visitor turns it on.</li>
+        <li><b>No clipping.</b> Props near the goat's path are removed at load, so he never runs through trees, rocks or houses.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-a11y">
+      <h2 id="h-a11y">Not everyone wants a film</h2>
+      <p>A 3D intro is fun, but it shouldn't get in the way of anyone who just wants the portfolio:</p>
+      <ul>
+        <li>A <b>Skip intro</b> link goes straight to this plain HTML portfolio.</li>
+        <li>Visitors with <b>reduced motion</b> turned on are sent to the portfolio automatically.</li>
+        <li>Every note and button works from the <b>keyboard</b>, with a visible gold focus outline. Enter presses start, and Escape goes back.</li>
+        <li>If <b>WebGL</b> isn't available, a plain fallback page shows the same links.</li>
+      </ul>
+      <div class="next" style="margin-top:26px">
+        <a class="btn" href="/work/#projects">← Back to selected work</a>
+        <a class="btn primary" href="/#play">▶ Play the intro</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Matthew Szklarz</span>
+    <span><a href="mailto:mszklarz@gmail.com">Email</a> · <a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a> · <a href="/#play">▶ Play the intro</a></span>
+    <small>Press Start is an original work. Its look is inspired by late-90s console title screens; no assets were taken from any game.</small>
+  </div>
+</footer>
+</body>
+</html>

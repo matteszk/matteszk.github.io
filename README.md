@@ -80,16 +80,34 @@ It's an interactive 3D title screen in the style of a certain late-90s console g
 
 ## Running locally
 
-There's no build step. Because the page loads its libraries from CDNs, serve it over HTTP rather than opening the file directly:
+There's no build step, but the site has to be served over HTTP rather than opened as files: pages link to each other with root paths like `/work/` and `/#play`, and the intro loads its libraries from CDNs.
+
+**Easiest (Mac):** run `bash preview.command` from the repo folder in Terminal. It starts a local server and opens the site in your browser.
+
+In a git clone you can also double-click `preview.command`. If you downloaded the files instead (for example as a zip), macOS Gatekeeper blocks double-clicking the script; run it with `bash` as above, or clear the download flag once with `xattr -d com.apple.quarantine preview.command`.
+
+Any of these work too:
 
 ```bash
-# any static server works
-npx serve .
+bash preview.command
 # or
 python3 -m http.server 8000
+# or
+npx serve .
 ```
 
-Then open `http://localhost:8000`.
+Then open `http://localhost:8000` and click through:
+
+| Page | URL |
+|------|-----|
+| Intro | `http://localhost:8000/` |
+| Work | `http://localhost:8000/work/` |
+| Press Start case study | `http://localhost:8000/work/press-start/` |
+| Hal's Big Dig case study | `http://localhost:8000/work/hals-big-dig/` |
+
+**On your phone:** `preview.command` also prints a `Phone:` address like `http://192.168.1.23:8000`. Open it on a phone or tablet on the same Wi-Fi. If macOS asks whether Python can accept incoming connections, click **Allow**. Anyone on that network can open the preview while it runs, so stop it on public Wi-Fi.
+
+Press **Ctrl+C** in the terminal window to stop the server.
 
 ## Deployment
 
@@ -103,11 +121,17 @@ To use a custom domain:
 ## Project structure
 
 ```
-index.html   # the entire site: markup, styles, scene, audio and UI
+index.html                 # the 3D intro: markup, styles, scene, audio and UI
+work/index.html            # plain portfolio page: selected work, skills, experience
+work/images/               # project card images
+work/press-start/          # Press Start (this intro) case study: page and scene captures
+work/hals-big-dig/         # Hal's Big Dig case study: page, reel and stills
+preview.command            # double-click local preview (Mac)
+CNAME
 README.md
 ```
 
-Inside `index.html`, the script is organized roughly in this order:
+Inside the intro's `index.html`, the script is organized roughly in this order:
 
 1. Renderer, camera, sky, moon and lights
 2. Terrain, textures, trees, mountains, castle, village and props
