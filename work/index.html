@@ -70,9 +70,15 @@
   .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;padding:0;list-style:none}
   .tags li{font-size:.76rem;padding:3px 8px;border-radius:99px;background:rgba(60,40,20,.10);color:#4a3a28}
   .card p.aside{font-style:italic;font-size:.88rem;color:#6a5844}
-  .card .act{display:flex;gap:14px;font-size:.92rem;font-weight:600}
-  .card .act a{color:#8a2a1c}
-  .card .act span{color:#7a6a54;font-weight:500}
+
+  .card{transition:transform .15s ease,box-shadow .15s ease}
+  .card:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(0,0,0,.45)}
+  .card:focus-within{outline:2px solid var(--gold);outline-offset:3px}
+  @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+  .card h3 a.cardlink{color:inherit;text-decoration:none}
+  .card h3 a.cardlink::after{content:"";position:absolute;inset:0}
+  .card h3 a.cardlink:focus-visible{outline:none}
+  .card:hover h3 a.cardlink{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 
   /* skills */
   .skills{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
@@ -138,23 +144,21 @@
         <article class="card">
           <div class="art photo"><img src="images/goat-apples.png" alt="A blocky black goat with curved horns standing among scattered red apples on a warm studio backdrop" width="1600" height="1000" loading="lazy"></div>
           <div class="body">
-            <h3>Press Start</h3>
+            <h3><a class="cardlink" href="press-start/">Press Start</a></h3>
             <p class="meta">Personal project · 2026</p>
             <p>An interactive 3D title screen: a black goat roams a Carpathian landscape, and an in-world notice board holds the links.</p>
             <p class="aside">First project after a break from work, so naturally I took inspiration from my favorite hero — he took seven years off and came back just fine.</p>
             <ul class="tags"><li>Art direction</li><li>AI collaboration</li><li>three.js</li><li>Web Audio</li></ul>
-            <div class="act"><a href="press-start/">Case study</a><a href="/#play">Play it</a><a href="https://github.com/matteszk/matteszk.github.io">Code</a></div>
           </div>
         </article>
         <article class="card">
-          <div class="art photo"><a href="hals-big-dig/" tabindex="-1" aria-hidden="true"><img src="images/hals-big-dig-card.jpg" alt="" width="1200" height="750" loading="lazy"></a></div>
+          <div class="art photo"><img src="images/hals-big-dig-card.jpg" alt="" width="1200" height="750" loading="lazy"></div>
           <div class="body">
-            <h3>Hal's Big Dig</h3>
+            <h3><a class="cardlink" href="hals-big-dig/">Hal's Big Dig</a></h3>
             <p class="meta">CloudKid for PBS KIDS · <em>Nature Cat</em></p>
             <p>A fast arcade fossil dig. I pitched the concept and programmed it: auto-firing power-ups, tuned drop rates, and a trophy room where kids assemble the dinosaurs they dig up.</p>
             <p class="aside">Still live on PBS KIDS, ten years on.</p>
             <ul class="tags"><li>Game design</li><li>HTML5</li><li>JavaScript</li><li>SpringRoll</li></ul>
-            <div class="act"><a href="hals-big-dig/">Case study</a><a href="https://pbskids.org/games/play/hals-big-dig/138">Play it</a></div>
           </div>
         </article>
       </div>
