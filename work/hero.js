@@ -18,10 +18,10 @@
   const S = new THREE.Scene();
   S.fog = new THREE.Fog(0x241d2c, 9, 34);
   const cam = new THREE.PerspectiveCamera(40, 2, 0.1, 100);
-  const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(.3, 1.45, 0);
+  const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(1.2, 1.45, 0);
 
   // light: cool moonlight from above-left, dim purple fill
-  S.add(new THREE.HemisphereLight(0x8c86b8, 0x1a1712, 0.75));
+  S.add(new THREE.HemisphereLight(0x8c86b8, 0x1a1712, 0.95));
   const moon = new THREE.DirectionalLight(0xc9d4ff, 0.75); moon.position.set(-6, 10, 4); S.add(moon);
   const warm = new THREE.PointLight(0xffc860, 0.6, 7); warm.position.set(1.6, 2.2, 2.2); S.add(warm);
 
@@ -59,8 +59,8 @@
   }
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
-  [[-3.4, -1.5, .5], [3.8, -2.4, .7], [-2.2, 2.2, .3]].forEach(([x, z, s]) => S.add(mk(new THREE.DodecahedronGeometry(1, 0), rockM, x, s * .4, z, s, s * .7, s)));
-  S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 3, .25, .8));
+  [[-3.4, -1.5, .5], [5.6, -2.8, .7], [-1.2, 2.2, .3]].forEach(([x, z, s]) => S.add(mk(new THREE.DodecahedronGeometry(1, 0), rockM, x, s * .4, z, s, s * .7, s)));
+  S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 4.9, .25, .9));
 
   // foreground trunks: big, close to the camera, partly out of frame
   const FG = [];
@@ -106,10 +106,12 @@
     const up = B(.24, .75, .28, fur); up.position.y = -.37; hip.add(up);
     const knee = new THREE.Group(); knee.position.y = -.72; hip.add(knee);
     const lo = B(.17, .7, .17, fur); lo.position.y = -.35; knee.add(lo);
-    const hf = B(.2, .14, .24, hoofM); hf.position.set(0, -.72, .03); knee.add(hf); }
-  leg(.3, .7); leg(-.3, .7); leg(.3, -.75); leg(-.3, -.75);
+    const hf = B(.2, .14, .24, hoofM); hf.position.set(0, -.72, .03); knee.add(hf); return { hip, knee }; }
+  // diagonal pairs step together: front-left with back-right, front-right with back-left
+  const LEGS = [[leg(.3, .7), 0], [leg(-.3, .7), Math.PI], [leg(.3, -.75), Math.PI], [leg(-.3, -.75), 0]];
   rig.position.y = -.13;
-  goat.position.set(.4, 0, 0); goat.rotation.y = .75; S.add(goat);
+  const HOME = new THREE.Vector3(2.6, 0, -.6);
+  goat.position.copy(HOME); goat.rotation.y = -.75; S.add(goat);
 
   // fur + grain textures, as in the intro
   function texCanvas(fn) { const c = document.createElement('canvas'); c.width = c.height = 64; fn(c.getContext('2d')); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.LinearFilter; return t; }
@@ -129,7 +131,9 @@
   const bc = document.createElement('canvas'); bc.width = bc.height = 64;
   { const b = bc.getContext('2d'), gr = b.createRadialGradient(32, 32, 2, 32, 32, 31); gr.addColorStop(0, 'rgba(0,0,0,.6)'); gr.addColorStop(.6, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); b.fillStyle = gr; b.fillRect(0, 0, 64, 64); }
   const blob = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 3.2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(bc), transparent: true, depthWrite: false }));
-  blob.rotation.set(-Math.PI / 2, 0, -goat.rotation.y); blob.position.set(goat.position.x, .16, goat.position.z); S.add(blob);
+  S.add(blob);
+  function placeBlob() { blob.rotation.set(-Math.PI / 2, 0, goat.rotation.y); blob.position.set(goat.position.x, .16, goat.position.z); }
+  placeBlob();
 
   // --- fireflies: glowing sprites that drift on slow noise and pulse ---
   const fc = document.createElement('canvas'); fc.width = fc.height = 64;
@@ -143,28 +147,77 @@
     FLIES.push({ sp, home, a: rnd() * 100, b: rnd() * 100, sp1: .25 + rnd() * .35, ph: rnd() * 6.28, rate: .6 + rnd() * 1.1 });
   }
 
-  // --- idle: breathing, ear flicks, tail swish, blinks, glances, and now and then a graze ---
-  let nextBlink = 2, blinkT = -1, nextGlance = 3, glance = 0, glanceTo = 0, nextGraze = 7, grazeT = -1;
+  // --- behavior: graze by default; look up at the pointer while it's in the header nav;
+  //     walk to a spot on the ground when it's clicked near his home spot ---
+  const nav = document.querySelector('header.top');
+  let navPtr = null; // pointer x across the window (-1..1) while it's in the header
+  if (nav) {
+    nav.addEventListener('pointermove', e => { navPtr = (e.clientX / innerWidth) * 2 - 1; });
+    nav.addEventListener('pointerleave', () => { navPtr = null; });
+    nav.addEventListener('focusin', () => { if (navPtr === null) navPtr = 0; });
+    nav.addEventListener('focusout', () => { navPtr = null; });
+  }
+  const WALK_RADIUS = 4.5, walkTo = new THREE.Vector3(); let walking = false, walkPh = 0;
+  let nextBlink = 2, blinkT = -1, down = 1, yaw = 0, lift = 0;
+  const lerp = (a, b, k) => a + (b - a) * k, sstep = x => x * x * (3 - 2 * x);
   function idle(t, dt) {
-    const br = 1 + Math.sin(t * 1.7) * .02; chest.scale.y = br; hips.scale.y = 1 + Math.sin(t * 1.7 - .4) * .015;
-    // blink
+    chest.scale.y = 1 + Math.sin(t * 1.7) * .02; hips.scale.y = 1 + Math.sin(t * 1.7 - .4) * .015;
     if (t > nextBlink) { blinkT = t; nextBlink = t + 2.5 + Math.random() * 4; }
     const closed = blinkT > 0 && t - blinkT < .14; EYES.forEach(e => { e.material = closed ? lidM : eyeM; e.scale.y = closed ? .25 : 1; });
-    // look around
-    if (t > nextGlance) { glanceTo = (Math.random() - .5) * 1.1; nextGlance = t + 2.5 + Math.random() * 4; }
-    glance += (glanceTo - glance) * Math.min(1, dt * 2.2);
-    // graze: lower the head for a few seconds
-    if (grazeT < 0 && t > nextGraze) { grazeT = t; glanceTo = 0; }
-    let down = 0;
-    if (grazeT >= 0) { const g = t - grazeT; down = g < 1 ? g : g < 4 ? 1 : g < 5 ? 5 - g : 0; if (g > 5) { grazeT = -1; nextGraze = t + 8 + Math.random() * 7; } }
-    const e = down * down * (3 - 2 * down);
-    neck.rotation.x = -.08 + e * 1.3; head.rotation.x = e * (.6 + Math.sin(t * 6.6) * .05); head.rotation.y = glance * (1 - e);
+
+    // walking: turn toward the spot, then step over to it
+    if (walking) {
+      const dx = walkTo.x - goat.position.x, dz = walkTo.z - goat.position.z, dist = Math.hypot(dx, dz);
+      const want = Math.atan2(dx, dz); let dYaw = want - goat.rotation.y;
+      dYaw = Math.atan2(Math.sin(dYaw), Math.cos(dYaw));
+      goat.rotation.y += dYaw * Math.min(1, dt * 4);
+      if (Math.abs(dYaw) < .6) { const step = Math.min(dist, dt * 1.6); goat.position.x += dx / dist * step; goat.position.z += dz / dist * step; }
+      walkPh += dt * 7;
+      if (dist < .05) walking = false;
+    }
+    const moving = walking ? 1 : 0;
+    LEGS.forEach(([l, off]) => { const s = Math.sin(walkPh + off) * moving;
+      l.hip.rotation.x = lerp(l.hip.rotation.x, s * .4, Math.min(1, dt * 10)); l.knee.rotation.x = lerp(l.knee.rotation.x, Math.max(0, -s) * .5, Math.min(1, dt * 10)); });
+    rig.position.y = -.13 + Math.abs(Math.sin(walkPh)) * .04 * moving;
+
+    // head: down to graze unless walking or someone's in the nav
+    const looking = navPtr !== null && !walking;
+    down = lerp(down, walking || looking ? 0 : 1, Math.min(1, dt * (looking ? 5 : 2)));
+    const e = sstep(Math.max(0, Math.min(1, down)));
+    // when looking, turn the head toward the pointer's side of the screen
+    let wantYaw = 0;
+    if (looking) { wantYaw = navPtr * .7 - goat.rotation.y; wantYaw = Math.max(-1.1, Math.min(1.1, Math.atan2(Math.sin(wantYaw), Math.cos(wantYaw)))); }
+    yaw = lerp(yaw, wantYaw, Math.min(1, dt * 6));
+    lift = lerp(lift, looking ? 1 : 0, Math.min(1, dt * 5));
+    neck.rotation.x = -.08 - lift * .25 + e * 1.3;
+    head.rotation.x = e * (.6 + Math.sin(t * 6.6) * .05) - lift * .15;
+    head.rotation.y = yaw;
     body.rotation.x = e * .08;
-    // ears and tail
-    EARS.forEach(({ ear, sd }) => { ear.rotation.z = -.35 * sd + Math.max(0, Math.sin(t * 3 + sd * 2) - .94) * 6 * sd; });
-    tail.rotation.x = -.5 + Math.sin(t * 2.4) * .25;
+    EARS.forEach(({ ear, sd }) => { ear.rotation.z = -.35 * sd + Math.max(0, Math.sin(t * 3 + sd * 2) - .94) * 6 * sd + lift * .25 * sd; });
+    tail.rotation.x = -.5 + Math.sin(t * (walking ? 5 : 2.4)) * .25;
     beard.rotation.x = Math.sin(t * 1.3) * .05;
+    placeBlob();
   }
+
+  // click the ground near his spot and he walks over
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+  wrap.addEventListener('click', e => {
+    if (reduce) return;
+    const r = wrap.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, cam);
+    if (!ray.ray.intersectPlane(floor, hit)) return;
+    if (hit.distanceTo(HOME) > WALK_RADIUS) return;
+    walkTo.copy(hit); walking = true;
+  });
+  // show a pointer cursor over ground he can walk to
+  wrap.addEventListener('pointermove', e => {
+    if (reduce || e.pointerType !== 'mouse') return;
+    const r = wrap.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, cam);
+    wrap.style.cursor = ray.ray.intersectPlane(floor, hit) && hit.distanceTo(HOME) <= WALK_RADIUS ? 'pointer' : '';
+  });
 
   // --- camera: ease toward the mouse while it's over the scene, drift gently otherwise ---
   const tgt = { x: 0, y: 0 }, cur = { x: 0, y: 0 }; let hovering = false;

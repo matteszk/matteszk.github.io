@@ -43,9 +43,11 @@
   .hero3d{position:relative;height:clamp(240px,40vw,440px);background:#1c1820;overflow:hidden}
   .hero3d canvas{display:block;width:100%;height:100%;opacity:0;transition:opacity .8s ease}
   .hero3d.ready canvas{opacity:1}
-  .hero3d::after{content:"";position:absolute;inset:auto 0 0 0;height:38%;background:linear-gradient(to bottom,rgba(28,24,32,0),var(--bg));pointer-events:none}
+  .hero3d::after{content:"";position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(to bottom,rgba(28,24,32,0),var(--bg));pointer-events:none}
   @media (prefers-reduced-motion:reduce){.hero3d canvas{transition:none}}
-  .hero3d + .hero{padding-top:36px}
+  .hero3d + .hero{position:relative;z-index:1;margin-top:-10rem;padding-top:0;pointer-events:none}
+  .hero3d + .hero .links,.hero3d + .hero .lead,.hero3d + .hero .role,.hero3d + .hero .avail{pointer-events:auto} /* the title lets clicks through to the ground */
+  @media (max-width:640px){.hero3d + .hero{margin-top:-4rem}}
 
   /* hero */
   .hero{padding-top:72px;padding-bottom:48px}
