@@ -1,5 +1,6 @@
 // Light/dark toggle for /work and the case studies.
-// Default follows the system setting; a click saves the visitor's choice.
+// Follows the system setting. A click overrides it until the system setting
+// changes again, or until the visitor toggles back to match the system.
 // Fires a "themechange" event on document so the 3D hero can relight itself.
 (function () {
   const root = document.documentElement, sys = matchMedia('(prefers-color-scheme: light)');
@@ -17,12 +18,16 @@
     document.dispatchEvent(new CustomEvent('themechange', { detail: current() }));
   }
   window.currentTheme = current;
+  const sysTheme = () => (sys.matches ? 'light' : 'dark');
+  function follow() { delete root.dataset.theme; try { localStorage.removeItem('theme'); } catch (e) {} }
   if (btn) btn.addEventListener('click', () => {
     const next = current() === 'light' ? 'dark' : 'light';
-    root.dataset.theme = next;
-    try { localStorage.setItem('theme', next); } catch (e) {}
+    if (next === sysTheme()) follow(); // back in step with the system: follow it again
+    else { root.dataset.theme = next; try { localStorage.setItem('theme', next); } catch (e) {} }
     sync();
   });
-  sys.addEventListener && sys.addEventListener('change', () => { if (!root.dataset.theme) sync(); });
+  // a change in the system setting always wins over an earlier click
+  const onSys = () => { follow(); sync(); };
+  sys.addEventListener ? sys.addEventListener('change', onSys) : sys.addListener && sys.addListener(onSys);
   sync();
 })();
