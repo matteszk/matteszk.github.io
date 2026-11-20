@@ -109,14 +109,6 @@
   footer{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--muted);font-size:.92rem}
   footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
 
-
-  /* apple piles in the footer's bottom corners; only where they clear the text column */
-  footer{position:relative}
-  @media (min-width:1360px){
-    footer::before,footer::after{content:"";position:absolute;bottom:0;width:176px;height:100px;background:url(/work/images/apple-pile.svg) no-repeat bottom/contain;pointer-events:none}
-    footer::before{left:24px}
-    footer::after{right:24px;transform:scaleX(-1)}
-  }
 </style>
 </head>
 <body>
