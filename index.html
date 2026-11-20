@@ -363,7 +363,7 @@ const furHi=new THREE.MeshLambertMaterial({color:'#353039',flatShading:true});
 const hornM=new THREE.MeshLambertMaterial({color:'#c4b38e',flatShading:true}),hornM2=new THREE.MeshLambertMaterial({color:'#a6956f',flatShading:true}),hornTip=new THREE.MeshLambertMaterial({color:'#6e604a',flatShading:true});
 const hoofM=new THREE.MeshLambertMaterial({color:'#2c2620',flatShading:true});
 const eyeM=new THREE.MeshBasicMaterial({color:'#f2c23a'});
-const EYES=[],lidM=new THREE.MeshBasicMaterial({color:'#0c0a0e'});
+const EARS=[],EYES=[],lidM=new THREE.MeshBasicMaterial({color:'#0c0a0e'});
 const B=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
 const goat=new THREE.Group(),rig=new THREE.Group();goat.add(rig);
 const body=new THREE.Group();body.position.y=1.55;rig.add(body);
@@ -386,7 +386,9 @@ const beard=new THREE.Group();beard.position.set(0,-.26,.62);head.add(beard);
   const seg=B(th,th,len,i==5?hornTip:(i%2?hornM2:hornM));seg.position.copy(hp).addScaledVector(dir,len/2);seg.lookAt(seg.position.clone().add(dir));head.add(seg);
   hp.addScaledVector(dir,len*.92);ang-=.42}
  const e=B(.08,.1,.12,eyeM);e.position.set(.28*sd,.08,.42);head.add(e);EYES.push(e);
- const ear=B(.42,.1,.16,fur);ear.position.set(.38*sd,.12,.02);ear.rotation.z=-.35*sd;head.add(ear)});
+ const ear=B(.42,.1,.16,fur);ear.position.set(.38*sd,.12,.02);ear.rotation.z=-.35*sd;head.add(ear);EARS.push({ear,sd})});
+// ear flicks: each ear twitches now and then, on its own rhythm
+function earWiggle(t){EARS.forEach(({ear,sd})=>{ear.rotation.z=-.35*sd+Math.max(0,Math.sin(t*3+sd*2)-.94)*6*sd})}
 const tail=new THREE.Group();tail.position.set(0,.4,-1);body.add(tail);const tl=B(.18,.45,.18,fur);tl.position.y=.2;tail.add(tl);
 function leg(x,z,front){const hip=new THREE.Group();hip.position.set(x,-.25,z);body.add(hip);
  const up=B(.24,.75,.28,fur);up.position.y=-.37;hip.add(up);
@@ -739,7 +741,7 @@ function boardFrame(TT){const lt=boardT;
  dome.position.copy(cam.position);stars.position.copy(cam.position);ff.position.set(BRD.x,by,BRD.z);fmat.uniforms.t.value=TT;
  {const half=Math.floor((lt+.3)*1.6/Math.PI);if(half!==window._br){const first=window._br===undefined||half<window._br;window._br=half;
   if(!first){sp.copy(goat.position);sp.project(cam);breath(sp.x*.9,.4,half%2===0)}}}
- placeBlob();R.render(S,cam);placeAnchors()}
+ earWiggle(performance.now()/1000);placeBlob();R.render(S,cam);placeAnchors()}
 (function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),.05);const TT=clk.elapsedTime;
  if(mode==='board')boardT+=dt;else filmT+=dt;
  if(mode==='board'){setScn('board');boardFrame(TT);return}
@@ -767,7 +769,7 @@ function boardFrame(TT){const lt=boardT;
  ml.position.copy(mp);ml.target.position.copy(gp);
  dome.position.copy(cam.position);stars.position.copy(cam.position);
  ff.position.set(gp.x,gp.y,gp.z);fmat.uniforms.t.value=T;
- flyBats(T);swirlMist(T);skyMist(T,idx===0);placeBlob();R.render(S,cam)})();
+ flyBats(T);swirlMist(T);skyMist(T,idx===0);earWiggle(performance.now()/1000);placeBlob();R.render(S,cam)})();
 })();
 </script>
 <script>
