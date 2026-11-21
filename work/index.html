@@ -116,6 +116,22 @@
   footer{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--muted);font-size:.92rem}
   footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
 
+
+  /* fond memories: compact rows for older work */
+  .memories-lead{color:var(--muted);margin:-6px 0 18px}
+  .memories{list-style:none;margin:0;padding:0;display:grid;gap:12px;max-width:720px}
+  .memory{position:relative;display:grid;grid-template-columns:132px 1fr;gap:18px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:6px;background:var(--bg2);transition:border-color .3s ease,background-color .3s ease}
+  .memory:hover{border-color:var(--gold)}
+  .memory img{width:132px;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:3px;display:block}
+  .memory h3{margin:0 0 4px;font-size:1.25rem}
+  .memory .year{font-family:Inter,system-ui,sans-serif;font-size:.85rem;color:var(--muted);margin-left:6px}
+  .memory p{margin:0;color:var(--muted);font-size:.95rem}
+  .memory a.cardlink{color:var(--ink);text-decoration:underline;text-decoration-color:transparent;text-underline-offset:4px;transition:text-decoration-color .3s ease}
+  .memory a.cardlink::after{content:"";position:absolute;inset:0}
+  .memory:hover a.cardlink{text-decoration-color:currentColor}
+  .memory:focus-within{outline:2px solid var(--gold);outline-offset:3px}
+  @media (max-width:520px){.memory{grid-template-columns:96px 1fr;gap:12px}.memory img{width:96px}}
+  @media (prefers-reduced-motion:reduce){.memory,.memory a.cardlink{transition:none}}
 </style>
 </head>
 <body>
@@ -179,16 +195,23 @@
             <ul class="tags"><li>Game design</li><li>Canvas</li></ul>
           </div>
         </article>
-        <article class="card">
-          <div class="art photo"><img src="images/midnight-mario-card.jpg" alt="" width="1200" height="750" loading="lazy"></div>
-          <div class="body">
-            <h3><a class="cardlink" href="midnight-mario/">Midnight Mario</a></h3>
-            <p class="meta">Northern Spark 2012 · with Peng Wu &amp; Jack Pavlik</p>
-            <p>An interactive projection for Minneapolis's annual Nuit Blanche.</p>
-            <ul class="tags"><li>Xbox Kinect</li><li>Interactive installation</li></ul>
-          </div>
-        </article>
       </div>
+    </div>
+  </section>
+
+  <section id="memories" aria-labelledby="h-memories">
+    <div class="wrap">
+      <h2 id="h-memories">Fond memories</h2>
+      <p class="memories-lead">Older work I still love.</p>
+      <ul class="memories">
+        <li class="memory">
+          <img src="images/midnight-mario-card.jpg" alt="" width="1200" height="750" loading="lazy">
+          <div>
+            <h3><a class="cardlink" href="midnight-mario/">Midnight Mario</a> <span class="year">2012</span></h3>
+            <p>An interactive projection for Minneapolis's annual Nuit Blanche. Processing, with a Kinect camera watching for shadows.</p>
+          </div>
+        </li>
+      </ul>
     </div>
   </section>
 
