@@ -119,7 +119,7 @@
 
   <div class="wrap">
     <div class="reel">
-      <video src="reel.mp4" poster="poster.jpg" controls muted playsinline loop preload="metadata"
+      <video id="reel" src="reel.mp4" poster="poster.jpg" controls autoplay muted playsinline loop preload="auto"
         aria-label="Gameplay reel of Hal's Big Dig: digging grids, power-ups, and assembling fossils in the Dog House"></video>
       <p>Gameplay reel: digging, power-ups, the Dog House trophy room, and fossil assembly.</p>
       <div class="links">
@@ -189,5 +189,11 @@
     <small><em>Nature Cat</em> and its characters belong to their respective owners. Game footage is shown as a sample of my work at CloudKid.</small>
   </div>
 </footer>
+<script>
+// The reel autoplays muted on a loop, except for visitors who prefer reduced motion:
+// they get the poster frame and can press play themselves.
+(function(){var v=document.getElementById('reel');if(!v)return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){v.removeAttribute('autoplay');v.pause();v.currentTime=0;}})();
+</script>
 </body>
 </html>
