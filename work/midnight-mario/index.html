@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Midnight Mario — Matthew Szklarz, Frontend Developer</title>
-<meta name="description" content="Case study: Midnight Mario, an interactive jump-rope installation at Northern Spark 2012. Matthew Szklarz programmed it in Processing.">
+<meta name="description" content="Case study: Midnight Mario, an interactive projection at Northern Spark 2012. Matthew Szklarz programmed it in Processing.">
 <meta property="og:title" content="Midnight Mario — Matthew Szklarz">
 <meta property="og:description" content="An interactive projection for Minneapolis's annual Nuit Blanche.">
 <meta property="og:image" content="https://matthewszklarz.com/work/midnight-mario/northern-spark-2012.jpg">
@@ -98,6 +98,12 @@
     52%{transform:translate(-50%,-110%);opacity:0}
     100%{transform:translate(-50%,-100%);opacity:0}}
   @media (prefers-reduced-motion:reduce){.coinshot .coin{animation:none;opacity:1;transform:translate(-50%,-260%)}}
+
+  .reel .video{position:relative;aspect-ratio:16/9;border-radius:6px;overflow:hidden;background:#000;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .reel .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .coinshot{margin:22px 0 0}
+  .coinshot img{width:100%;height:auto;display:block;border-radius:4px;border:1px solid var(--line)}
+  p.caption{color:var(--muted);font-size:.88rem;margin-top:8px}
 </style>
 </head>
 <body>
@@ -122,22 +128,23 @@
     <a class="back" href="/work/#projects">← Selected work</a>
     <div class="intro">
       <h1>Midnight Mario</h1>
-      <p class="lead">An interactive projection for Northern Spark 2012, Minneapolis's annual Nuit Blanche. A robotic arm turns a jump rope while you jump into a projected 8-bit Mario world, and your shadow breaks the coin brick.</p>
+      <p class="lead">An interactive projection for Northern Spark 2012, Minneapolis's annual Nuit Blanche. Jump in front of a projected 8-bit Mario world, and when your shadow hits the brick, a coin pops out.</p>
       <dl class="facts">
         <div><dt>Event</dt><dd>Northern Spark 2012, Minneapolis</dd></div>
         <div><dt>Artists</dt><dd>Peng Wu, Matthew Szklarz, Jack Pavlik</dd></div>
         <div><dt>My role</dt><dd>Programming (Processing)</dd></div>
-        <div><dt>Built with</dt><dd>Processing, Xbox Kinect camera, projection, robotic arm</dd></div>
+        <div><dt>Built with</dt><dd>Processing, Xbox Kinect camera, projection</dd></div>
       </dl>
     </div>
   </div>
 
   <div class="wrap">
     <div class="reel">
-      <figure class="coinshot" style="margin:0"><span class="coin" aria-hidden="true"></span><img src="northern-spark-2012.jpg" alt="Two people jumping in silhouette against a Super Mario Bros. scene projected onto the side of a building at night, under a pixel-art Midnight Mario title" width="628" height="384" style="height:auto"></figure>
-      <p>Jumpers' shadows in the projected Mario world, on the side of a building at MCAD.</p>
+      <div class="video"><iframe src="https://player.vimeo.com/video/50565505?dnt=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;color=e7b84a" title="Midnight Mario at Northern Spark 2012: video documentation by Peng Wu" allow="fullscreen; picture-in-picture" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <p>Video documentation by Peng Wu, later exhibited at the B.I. Worldwide Gallery (Oct 2012 – Jan 2013).</p>
       <div class="links">
-        <a class="btn" href="https://2012.northernspark.org/project/peng-wu-2.html" target="_blank" rel="noopener">Northern Spark 2012 page ↗</a>
+        <a class="btn" href="https://www.behance.net/gallery/21225969/Midnight-Mario-Northern-Spark-public-art-project" target="_blank" rel="noopener">Peng's project page ↗</a>
+        <a class="btn" href="https://2012.northernspark.org/project/peng-wu-2.html" target="_blank" rel="noopener">Northern Spark 2012 ↗</a>
       </div>
     </div>
   </div>
@@ -145,13 +152,15 @@
   <div class="wrap narrow">
     <section aria-labelledby="h-project">
       <h2 id="h-project">The project</h2>
-      <p>Midnight Mario was an interactive installation by Peng Wu, Jack Pavlik and me, presented by MCAD's student-curated Gallery 148 at Northern Spark 2012, Minneapolis's all-night Nuit Blanche arts festival. It ran from dusk until dawn on the side of a building at the Minneapolis College of Art and Design.</p>
-      <p>It mixed a playground game with a video game. A robotic arm turned a jump rope, and as you jumped, your shadow appeared in a projected scene from the original <em>Super Mario Bros.</em> The only goal was to hit the brick and make gold coins rain down, and to keep jumping. Trip on the rope and your turn was over.</p>
+      <p>Midnight Mario was commissioned by Northern Spark, Minneapolis's all-night Nuit Blanche arts festival, and presented by MCAD's student-curated Gallery 148. It ran from dusk until dawn on the side of a building at the Minneapolis College of Art and Design.</p>
+      <p>Passersby stepped into a projected scene from the original <em>Super Mario Bros.</em>, and their shadows became part of the game. Whenever someone's shadow overlapped the brick, the animation of a coin jumping out played automatically. There was nothing to win: people just kept jumping to make more coins pop.</p>
     </section>
 
     <section aria-labelledby="h-role">
       <h2 id="h-role">My part</h2>
       <p>I programmed the projected scene using Processing. An Xbox Kinect watched the wall while the code checked the area around the brick for the dark color of a shadow, a simple color-based hit box. When a jumper's shadow bumped the brick, a coin popped out.</p>
+      <figure class="coinshot"><span class="coin" aria-hidden="true"></span><img src="northern-spark-2012.jpg" alt="Two people jumping in silhouette against a Super Mario Bros. scene projected onto the side of a building at night, with a coin popping out of the brick" width="628" height="384" loading="lazy" style="height:auto"></figure>
+      <p class="caption">Two jumpers' shadows going for the brick. (Photo: Northern Spark 2012; coin animation added.)</p>
       <div class="next" style="margin-top:26px">
         <a class="btn primary" href="/work/press-start/">Next: Press Start →</a>
       </div>
@@ -163,7 +172,7 @@
   <div class="wrap">
     <span>© 2026 Matthew Szklarz</span>
     <span><a href="mailto:mszklarz@gmail.com">Email</a> · <a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a></span>
-    <small><em>Super Mario Bros.</em> belongs to Nintendo. Photo: Northern Spark 2012. Shown as a sample of my work on this installation.</small>
+    <small><em>Super Mario Bros.</em> belongs to Nintendo. Video: Peng Wu. Photo: Northern Spark 2012. Shown as a sample of my work on this installation.</small>
   </div>
 </footer>
 </body>
