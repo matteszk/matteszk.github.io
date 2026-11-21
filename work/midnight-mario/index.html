@@ -83,6 +83,21 @@
   footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
   footer small{display:block;width:100%;font-size:.82rem;opacity:.8}
 
+
+  /* a coin pops out of the projected brick, as the installation did when a jumper hit it */
+  .coinshot{position:relative}
+  .coinshot .coin{position:absolute;left:51.5%;top:46.4%;width:2.6%;aspect-ratio:10/14;transform:translate(-50%,-100%);
+    background:url(coin.svg) 0 0/400% 100% no-repeat;image-rendering:pixelated;opacity:0;pointer-events:none;
+    animation:coin-pop 2.6s cubic-bezier(.25,.6,.35,1) infinite, coin-spin .36s steps(4) infinite}
+  @keyframes coin-spin{to{background-position:133.33% 0}}
+  @keyframes coin-pop{
+    0%{transform:translate(-50%,-100%);opacity:0}
+    4%{opacity:1}
+    28%{transform:translate(-50%,-360%);opacity:1}
+    48%{transform:translate(-50%,-150%);opacity:1}
+    52%{transform:translate(-50%,-110%);opacity:0}
+    100%{transform:translate(-50%,-100%);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.coinshot .coin{animation:none;opacity:1;transform:translate(-50%,-260%)}}
 </style>
 </head>
 <body>
@@ -119,7 +134,7 @@
 
   <div class="wrap">
     <div class="reel">
-      <figure style="margin:0"><img src="northern-spark-2012.jpg" alt="Two people jumping in silhouette against a Super Mario Bros. scene projected onto the side of a building at night, under a pixel-art Midnight Mario title" width="628" height="384" style="height:auto"></figure>
+      <figure class="coinshot" style="margin:0"><span class="coin" aria-hidden="true"></span><img src="northern-spark-2012.jpg" alt="Two people jumping in silhouette against a Super Mario Bros. scene projected onto the side of a building at night, under a pixel-art Midnight Mario title" width="628" height="384" style="height:auto"></figure>
       <p>Jumpers' shadows in the projected Mario world, on the side of a building at MCAD.</p>
       <div class="links">
         <a class="btn" href="https://2012.northernspark.org/project/peng-wu-2.html" target="_blank" rel="noopener">Northern Spark 2012 page ↗</a>
