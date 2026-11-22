@@ -295,11 +295,14 @@ const HS=[[-12,162,.1,5],[8,158,-.2,1,1],[28,164,.15,6],[46,156,0,5],[66,162,-.1
  [-18,110,.2,5],[34,100,.3,5],[58,108,0,6],[80,102,.2,7],[128,120,.1,0]];
 HS.forEach(([x,z,r,t,red])=>house(x,z,r,t,red));
 {// dense fir forest on the slope behind the village, with a few autumn trees mixed in
- const GROVES=[[-70,80,24,18],[-28,66,26,22],[18,80,22,16],[60,58,30,24],[104,72,26,22],[146,56,26,22],[182,76,20,18],[84,40,16,10],[-50,48,14,10]],FT=[];
- for(let i=0,n=0;i<4000&&n<300;i++){let x,z;
-  if(Math.random()<.85){const g=GROVES[Math.random()*GROVES.length|0],a=Math.random()*6.283,r=Math.sqrt(Math.random())*(.75+Math.random()*.4);x=g[0]+Math.cos(a)*g[2]*r;z=g[1]+Math.sin(a)*g[3]*r}
-  else{x=-95+Math.random()*290;z=30+Math.random()*66} // stragglers between the groves and out front
-  if(z>97||z<30||(x>-38&&x<28&&z<72)||FT.some(([u,v])=>(u-x)**2+(v-z)**2<14))continue;FT.push([x,z]);n++;
+ const FOREST=[[-60.0, 92.5], [-97.5, 75.5], [-105.0, 58.0], [-112.5, 25.5], [-115.0, 10.5], [-97.5, -2.0], [-55.0, -27.0], [-17.5, -30.0], [45.0, -30.0], [145.0, -32.0], [182.5, -17.0], [207.5, 5.5], [220.0, 28.0], [220.0, 88.0], [195.0, 111.8], [170.0, 114.2], [125.0, 126.8], [90.0, 115.5], [45.0, 93.0], [-5.0, 91.8], [-57.5, 102.5]],FT=[]; // outline drawn by hand over a top-down render
+ const inPoly=(x,z)=>{let c=false;for(let i=0,j=FOREST.length-1;i<FOREST.length;j=i++){const[a,b]=FOREST[i],[u,v]=FOREST[j];if((b>z)!==(v>z)&&x<(u-a)*(z-b)/(v-b)+a)c=!c}return c};
+ for(let i=0,n=0;i<20000&&n<450;i++){const x=-120+Math.random()*320,z=-40+Math.random()*130;
+  if(!inPoly(x,z))continue;
+  if(x>-40&&x<30&&z>-12&&z<64)continue; // opening shot: camera-to-goat sightline stays open
+  if(x>112&&x<170&&z<6)continue; // scene 2: the goat's run and the camera beside it
+  if(Math.random()>.45+.4*Math.sin(x*.06+1)*Math.cos(z*.07))continue; // loose clumps
+  if(FT.some(([u,v])=>(u-x)**2+(v-z)**2<14))continue;FT.push([x,z]);n++;
   const t=Math.random()<.9?TREES.fir():TREES.oak();if(t.children[1]&&Math.random()<.5)t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=leafM[3]});
   const s2=1.4+Math.random()*1.4;t.scale.setScalar(s2);t.position.set(x,hgt(x,z)-.2,z);t.rotation.y=Math.random()*6;S.add(t)}
  const orange=new THREE.MeshLambertMaterial({color:'#d8782a',flatShading:true});
