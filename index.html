@@ -470,6 +470,17 @@ function gallop(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation
  rig.position.y=Math.abs(Math.sin(ph*2))*.05-.13;
  body.rotation.x=Math.sin(ph*2)*.04;neck.rotation.x=-Math.sin(ph*2)*.08;head.rotation.x=Math.sin(ph*2+1)*.06;
  tail.rotation.x=-.6+Math.sin(ph*2)*.2}
+// bound: front pair lands, rear pair lands and drives, then a long airborne leap with legs gathering and reaching
+const BOUND=true,BRATE=1.6,clamp01=x=>Math.max(0,Math.min(1,x));
+function bound(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;
+ const u=((ph/(2*Math.PI))%1+1)%1,s=clamp01((u-.4)/.6);
+ const y=u<.4?-.07*Math.sin(Math.PI*u/.4):.5*Math.sin(Math.PI*s);
+ const pitch=u<.2?.1*(1-u/.2):u<.4?-.16*((u-.2)/.2):-.16+.28*s;
+ const fh=u<.25?-.5+.95*(u/.25):u<.4?.45:.45-1.05*clamp01((u-.4)/.4),fk=.95*Math.sin(Math.PI*clamp01((u-.3)/.45));
+ const rh=u<.15?-.4:u<.4?-.4+1*((u-.15)/.25):.6-1*clamp01((u-.4)/.45),rk=-.8*Math.sin(Math.PI*clamp01((u-.45)/.4));
+ L.forEach((l,i)=>{const j=(i%2?.03:-.03);l.hip.rotation.x=(l.front?fh:rh)+j;l.knee.rotation.x=l.front?fk:rk});
+ rig.position.y=-.13+y;body.rotation.x=pitch;neck.rotation.x=-pitch*.7+.05;head.rotation.x=-pitch*.3;
+ beard.rotation.x=Math.sin(ph*2+1)*.12;tail.rotation.x=-.4-pitch*1.5}
 const apple=new THREE.Group();
 {// tipped-over barrel with apples spilling out across the grass
  const am=[new THREE.MeshLambertMaterial({color:'#d42a2a',flatShading:true}),new THREE.MeshLambertMaterial({color:'#e8453a',flatShading:true}),new THREE.MeshLambertMaterial({color:'#b51f24',flatShading:true})];
@@ -751,18 +762,19 @@ function mCimbPluck(start,beat,beats){const bars=Math.round(beats/4);
   if(b%4===3)mCimbRing(ch[0]+12,t+3.5*beat,.28)}}
 function musicStart(){if(mOn||!AC)return;mOn=true;musicBus();mWind();const beat=60/MUS.bpm,beats=MUS.cimb.length*4,total=beats*beat;
  const t0=AC.currentTime+.8;
- const loop=start=>{if(!mOn)return;mDrone(start,total+1);mCimbPluck(start,beat,beats);
-  mTimer=setTimeout(()=>loop(start+total),(start+total-AC.currentTime-.6)*1000)};
- loop(t0)}
+ /* no music: only the breeze under the goat's own sounds */}
 function musicStop(){mOn=false;clearTimeout(mTimer);mNodes.forEach(n=>{try{n.stop()}catch(e){}});mNodes=[]}
 window.toggleSound=()=>{initAudio();if(!AC)return false;soundOn=!soundOn;if(AC.state==='suspended')AC.resume();if(soundOn)musicStart();else musicStop();return soundOn};
 window.wakeAudio=()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()};
 const sp=new THREE.Vector3();let lastShot=-1,lastFoot=[0,0,0,0],lastPr=0;
 function hooves(idx,gait,ph,gp){
- if(idx!==lastShot){lastShot=idx;lastFoot=[0,0,0,0].map((_,i)=>Math.floor((ph+GOFF[i]*2*Math.PI-Math.PI/2)/(2*Math.PI)));lastPr=Math.floor(ph/(2*Math.PI));return}
+ if(idx!==lastShot){lastShot=idx;lastFoot=[0,0,0,0].map((_,i)=>Math.floor((ph+GOFF[i]*2*Math.PI-Math.PI/2)/(2*Math.PI)));lastPr=Math.floor(ph/(2*Math.PI));if(BOUND){const q=ph*BRATE/(2*Math.PI);lastFoot[0]=Math.floor(q);lastFoot[2]=Math.floor(q-.18)}return}
  sp.copy(gp);sp.project(cam);if(sp.z>1)return; // behind camera
  const pan=sp.x*.9,dist=cam.position.distanceTo(gp),vol=Math.min(.5,Math.max(.03,5/dist))*(Math.abs(sp.x)>1.2?.5:1);
- if(gait==='gallop'){for(let i=0;i<4;i++){const n=Math.floor((ph+GOFF[i]*2*Math.PI-Math.PI/2)/(2*Math.PI)); // foot lands as swing ends
+ if(gait==='gallop'&&BOUND){const q=ph*BRATE/(2*Math.PI),nf=Math.floor(q),nr=Math.floor(q-.18);
+   if(nf>lastFoot[0]){lastFoot[0]=nf;clop(pan+.04,vol,false,0);setTimeout(()=>clop(pan-.04,vol*.9,false,1),22)}
+   if(nr>lastFoot[2]){lastFoot[2]=nr;clop(pan+.04,vol*.85,false,2);setTimeout(()=>clop(pan-.04,vol*.8,false,3),20)}}
+ else if(gait==='gallop'){for(let i=0;i<4;i++){const n=Math.floor((ph+GOFF[i]*2*Math.PI-Math.PI/2)/(2*Math.PI)); // foot lands as swing ends
    if(n>lastFoot[i]){lastFoot[i]=n;clop(pan+(i%2?-.04:.04),vol*(L[i].front?1:.85),false,i)}}}
  else if(gait==='prance'){const n=Math.floor(ph/(2*Math.PI)); // all four land together after each leap
   if(n>lastPr){lastPr=n;[0,18,34,52].forEach((ms,i)=>setTimeout(()=>clop(pan+(i%2?-.05:.05),vol*.9,true,i),ms))}}}
@@ -828,7 +840,7 @@ function boardFrame(TT){const lt=boardT;
   else{stand();hg='none'}
   if(lt>=MW.land&&!window._landed){window._landed=1;sp.copy(gp);sp.project(cam);const pn=sp.x*.9;[0,22,38,60].forEach((ms,i)=>setTimeout(()=>clop(pn+(i%2?-.05:.05),.4,true,i),ms))}
   if(lt<MW.jump)window._landed=0}
- else if(sh.gait==='graze')graze(lt);else (sh.gait==='prance'?prance:gallop)(ph);
+ else if(sh.gait==='graze')graze(lt);else if(sh.gait==='gallop'&&BOUND)bound(ph*BRATE);else (sh.gait==='prance'?prance:gallop)(ph);
  apple.visible=sh.gait==='graze';if(apple.visible){const fw=sh.dir;apple.position.set(gp.x+fw.x*2.4,G(gp.x+fw.x*2.15,gp.z+fw.z*2.15)+.0,gp.z+fw.z*2.4);apple.position.y-=.05;apple.rotation.y=0}
  const c=sh.cam(gp,lte);cam.position.copy(c.pos);
  const minY=G(c.pos.x,c.pos.z)+1;if(cam.position.y<minY)cam.position.y=minY;cam.lookAt(c.look);
