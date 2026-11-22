@@ -60,10 +60,10 @@
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
   // a fairy ring of small stones marks the clearing the goat can wander
-  const RING = { x: 1.2, z: -1.3, r: 3.8 };
-  for (let i = 0; i < 14; i++) {
-    const a = i / 14 * Math.PI * 2 + rnd() * .2, rr = RING.r + .35 + rnd() * .2, sc = .13 + rnd() * .1;
-    const st = mk(new THREE.DodecahedronGeometry(1, 0), rockM, RING.x + Math.cos(a) * rr, sc * .5, RING.z + Math.sin(a) * rr, sc, sc * .7, sc);
+  const RING = { x: 1.2, z: .2, rx: 6.4, rz: 3.4 }; // a wide oval: broad across, shallow front to back
+  for (let i = 0; i < 24; i++) {
+    const a = i / 24 * Math.PI * 2 + rnd() * .12, sc = .13 + rnd() * .1, out = .35 + rnd() * .2;
+    const st = mk(new THREE.DodecahedronGeometry(1, 0), rockM, RING.x + Math.cos(a) * (RING.rx + out), sc * .5, RING.z + Math.sin(a) * (RING.rz + out), sc, sc * .7, sc);
     st.rotation.y = rnd() * 6; S.add(st);
   }
   S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
@@ -110,7 +110,7 @@
   // diagonal pairs step together: front-left with back-right, front-right with back-left
   const LEGS = [[leg(.3, .7), 0], [leg(-.3, .7), Math.PI], [leg(.3, -.75), Math.PI], [leg(-.3, -.75), 0]];
   rig.position.y = -.13;
-  const HOME = new THREE.Vector3(RING.x, 0, RING.z);
+  const HOME = new THREE.Vector3(RING.x, 0, -1.3);
   goat.position.copy(HOME); goat.rotation.y = -.75; S.add(goat);
 
   // fur + grain textures, as in the intro
@@ -159,23 +159,50 @@
   }
 
   // the apple: low-poly, in the intro's orchard colors
-  const appleM = M('#d42a2a'), stemM = M('#4a3020'), leafM = M('#5c8a32');
+  const stemM = M('#4a3020'), leafM = M('#5c8a32');
+  const FLESH = new THREE.Color('#f3e3b0');
+  // three varieties: [skin, blush, height, width]
+  const KINDS = [['#d42a2a', '#e8453a', .92, 1], ['#a8181e', '#c8302e', 1.08, .94], ['#8fb83a', '#c9c24a', .95, 1.02]];
+  function appleStages([skin, blush, sy, sxz], seed) {
+    let rs = seed; const r = () => (rs = (rs * 16807) % 2147483647) / 2147483647;
+    const base = new THREE.IcosahedronGeometry(.28, 3); const g0 = base.index ? base.toNonIndexed() : base;
+    const P = g0.attributes.position, n = P.count, cSkin = new THREE.Color(skin), cBlush = new THREE.Color(blush);
+    const pos = [], col = [];
+    for (let i = 0; i < n; i++) { pos.push(new THREE.Vector3(P.getX(i) * sxz, P.getY(i) * sy, P.getZ(i) * sxz)); col.push(cSkin.clone().lerp(cBlush, Math.max(0, P.getX(i) / .28) * .6)); }
+    const bites = []; let ang = r() * 6.28;
+    for (let b = 0; b < 3; b++) { ang += 2.1 + r() * .5; bites.push({ c: new THREE.Vector3(Math.cos(ang) * .34 * sxz, (r() - .5) * .14, Math.sin(ang) * .34 * sxz), rb: .22 + r() * .03 }); }
+    const make = k => { // k bites taken; k === 4 is the core
+      const p = pos.map(v => v.clone()), c = col.map(x => x.clone());
+      for (let b = 0; b < Math.min(k, 3); b++) { const { c: bc, rb } = bites[b];
+        p.forEach((v, i) => { const d = v.distanceTo(bc); if (d < rb) { v.copy(bc).addScaledVector(v.clone().sub(bc).normalize(), rb); c[i].copy(FLESH); } }); }
+      if (k === 4) p.forEach((v, i) => { const t = Math.abs(v.y) / (.28 * sy); if (t < .62) { const sq = .3 + t * .5; v.x *= sq; v.z *= sq; c[i].copy(FLESH); } });
+      for (let f = 0; f < c.length; f += 3) { if (c[f].equals(FLESH) || c[f + 1].equals(FLESH) || c[f + 2].equals(FLESH)) { c[f].copy(FLESH); c[f + 1].copy(FLESH); c[f + 2].copy(FLESH); } }
+      const g = new THREE.BufferGeometry(), a = [], cc = [];
+      p.forEach((v, i) => { a.push(v.x, v.y, v.z); cc.push(c[i].r, c[i].g, c[i].b); });
+      g.setAttribute('position', new THREE.Float32BufferAttribute(a, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(cc, 3)); g.computeVertexNormals(); return g;
+    };
+    return [0, 1, 2, 3, 4].map(make);
+  }
+  const STAGES = KINDS.map((k, i) => appleStages(k, 11 + i * 97));
   const apple = new THREE.Group();
-  apple.add(mk(new THREE.IcosahedronGeometry(.28, 1), appleM, 0, 0, 0, 1, .92, 1));
+  const appleMesh = new THREE.Mesh(STAGES[0][0], new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, map: roughT }));
+  apple.add(appleMesh);
   apple.add(mk(new THREE.CylinderGeometry(.025, .03, .16, 4), stemM, 0, .3, 0));
   { const lf = mk(new THREE.BoxGeometry(.16, .02, .08), leafM, .08, .32, 0); lf.rotation.z = -.5; apple.add(lf); }
+  let kind = 0, stage = 0;
   apple.visible = false; S.add(apple);
   const APPLE_R = .26, SPAWN_Y = 1.05; // spawns at about half the goat's body height
   let appleState = 'none', appleT = 0, appleVy = 0, bounces = 0, appleSize = 1;
 
-  let state = 'idle', stateT = 0, walkPh = 0;
+  let state = 'idle', stateT = 0, walkPh = 0, chomp = 0;
   const walkTo = new THREE.Vector3();
   let nextBlink = 2, blinkT = -1, down = 0, yaw = 0, lift = 0, glance = 0, glanceTo = 0, nextGlance = 3;
   const lerp = (a, b, k) => a + (b - a) * k, sstep = x => x * x * (3 - 2 * x);
-  const inRing = (x, z, pad) => Math.hypot(x - RING.x, z - RING.z) <= RING.r - pad;
+  const inRing = (x, z, pad) => ((x - RING.x) / (RING.rx - pad)) ** 2 + ((z - RING.z) / (RING.rz - pad)) ** 2 <= 1;
 
   function dropApple(x, z) {
     apple.position.set(x, SPAWN_Y, z); apple.rotation.y = Math.random() * 6;
+    kind = Math.floor(Math.random() * 3); stage = 0; appleMesh.geometry = STAGES[kind][0];
     apple.scale.setScalar(.01); apple.visible = true; appleSize = 1;
     appleState = 'pop'; appleT = 0; appleVy = 0; bounces = 0;
     // walk to a spot where his mouth is over the apple
@@ -224,8 +251,9 @@
       }
     } else if (state === 'eat') {
       // a few bites: the apple shrinks with each one, then it's gone
-      if (stateT > .7) { appleSize = Math.max(0, 1 - (stateT - .7) / 2.2); apple.scale.setScalar(Math.max(.01, appleSize * (1 - (Math.sin(stateT * 9) > .6 ? .06 : 0)))); }
-      if (stateT > 2.9) { apple.visible = false; appleState = 'none'; state = 'idle'; stateT = 0; }
+      const want = Math.min(4, Math.max(0, Math.floor((stateT - .55) / .6) + 1));
+      if (stateT > .55 && want !== stage) { stage = want; appleMesh.geometry = STAGES[kind][stage]; chomp = 1; }
+      if (stateT > 3.35) { apple.visible = false; appleState = 'none'; state = 'idle'; stateT = 0; }
     }
     if (moving) walkPh += dt * 7;
     LEGS.forEach(([l, off]) => { const sw = Math.sin(walkPh + off) * moving;
@@ -244,7 +272,8 @@
     yaw = lerp(yaw, wantYaw * (1 - e), Math.min(1, dt * 6));
     lift = lerp(lift, looking ? 1 : 0, Math.min(1, dt * 5));
     neck.rotation.x = -.08 - lift * .25 + e * 1.3;
-    head.rotation.x = e * (.6 + Math.sin(t * 6.6) * .05) - lift * .15;
+    chomp = Math.max(0, chomp - dt * 5);
+    head.rotation.x = e * (.6 - chomp * .22) - lift * .15;
     head.rotation.y = yaw;
     body.rotation.x = e * .08;
     EARS.forEach(({ ear, sd }) => { ear.rotation.z = -.35 * sd + Math.max(0, Math.sin(t * 3 + sd * 2) - .94) * 6 * sd + lift * .25 * sd; });
@@ -265,8 +294,8 @@
     if (reduce || state === 'eat') return;
     const g = groundAt(e); if (!g) return;
     // keep the apple a little inside the stones
-    const dx = g.x - RING.x, dz = g.z - RING.z, d = Math.hypot(dx, dz), max = RING.r - .5;
-    const k = d > max ? max / d : 1;
+    const dx = g.x - RING.x, dz = g.z - RING.z, ov = Math.hypot(dx / (RING.rx - .7), dz / (RING.rz - .7));
+    const k = ov > 1 ? 1 / ov : 1;
     dropApple(RING.x + dx * k, RING.z + dz * k);
   });
   // pointer cursor over ground inside the ring
