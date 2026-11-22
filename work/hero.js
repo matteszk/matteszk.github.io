@@ -22,7 +22,7 @@
     vertexShader: 'varying float h;void main(){h=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
     fragmentShader: 'varying float h;void main(){vec3 a=vec3(.62,.45,.47),b=vec3(.38,.31,.45),c=vec3(.13,.12,.25);vec3 col=mix(a,b,smoothstep(0.,.18,h));col=mix(col,c,smoothstep(.18,.75,h));gl_FragColor=vec4(col,1.);}' })));
   const cam = new THREE.PerspectiveCamera(40, 2, 0.1, 100);
-  const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(1.2, 2.15, 0); // aimed a bit high so the goat sits below the glass nav, with sky above
+  const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(1.2, 1.45, 0);
 
   // light: the intro's dusk - lilac sky fill and a low peach sun
   const hemi = new THREE.HemisphereLight(0xc8b0cc, 0x4a3e36, 1.15); S.add(hemi);
@@ -31,11 +31,15 @@
 
   // --- materials and helpers, matching the intro ---
   const M = c => new THREE.MeshLambertMaterial({ color: c, flatShading: true });
-  const trunkM = M('#4a3626'), pineM = M('#2b3a2a'), firM = M('#22301f'), deadM = M('#3a302a'), barkM = M('#2e241c');
+  const foliM = [M('#4f5f2c'), M('#5e5a2e'), M('#6b4a2a'), M('#8a5a2a')], trunkM = M('#4a3626'), pineM = M('#2b3a2a'), firM = M('#22301f'), deadM = M('#3a302a'), barkM = M('#2e241c');
   const mk = (geo, mat, x, y, z, sx = 1, sy = 1, sz = 1) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.scale.set(sx, sy, sz); return m; };
   const TREES = {
     pine() { const g = new THREE.Group(); g.add(mk(new THREE.CylinderGeometry(.25, .35, 1.6, 5), trunkM, 0, .8, 0)); g.add(mk(new THREE.ConeGeometry(1.6, 4.5, 5), pineM, 0, 3.6, 0)); return g; },
     fir() { const g = new THREE.Group(); g.add(mk(new THREE.CylinderGeometry(.2, .3, 2, 5), trunkM, 0, 1, 0)); for (let i = 0; i < 3; i++) g.add(mk(new THREE.ConeGeometry(1.9 - i * .5, 2.6, 6), firM, 0, 2.4 + i * 1.5, 0)); return g; },
+    oak() { const g = new THREE.Group(), lm = foliM[rnd() * foliM.length | 0]; g.add(mk(new THREE.CylinderGeometry(.35, .5, 2.6, 5), trunkM, 0, 1.3, 0));
+      g.add(mk(new THREE.IcosahedronGeometry(2.2, 0), lm, 0, 3.8, 0)); g.add(mk(new THREE.IcosahedronGeometry(1.5, 0), lm, 1.3, 3.2, .4)); g.add(mk(new THREE.IcosahedronGeometry(1.4, 0), lm, -1.1, 3.4, -.5)); return g; },
+    maple() { const g = new THREE.Group(), lm = foliM[1 + (rnd() * 3 | 0)]; g.add(mk(new THREE.CylinderGeometry(.28, .42, 3.2, 5), trunkM, 0, 1.6, 0));
+      [[0, 4.4, 0, 1.8], [1.1, 3.7, .6, 1.3], [-1, 3.9, -.5, 1.35], [.3, 5.2, -.4, 1.1], [-.5, 3.4, 1, 1.1]].forEach(([x, y, z, r]) => g.add(mk(new THREE.IcosahedronGeometry(r, 0), lm, x, y, z))); return g; },
     dead() { const g = new THREE.Group(); g.add(mk(new THREE.CylinderGeometry(.15, .35, 4, 5), deadM, 0, 2, 0)); [[.9, 3, .6], [-.8, 2.4, -.9], [.6, 3.6, -1.1]].forEach(([r, h, t]) => { const b = mk(new THREE.CylinderGeometry(.06, .12, 1.8, 4), deadM, 0, h, 0); b.rotation.z = r; b.rotation.y = t; g.add(b); }); return g; }
   };
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -69,10 +73,11 @@
     const x = Math.cos(a) * r, z = Math.sin(a) * r - 3;
     if (z > -4 && Math.abs(x) < 8) continue; // keep the clearing between camera and goat open
     if (z > 3 || (x > 0 && z > -2 && x < 14)) continue; // nothing crowding the right foreground
-    if (spots.some(([u, v]) => Math.hypot(u - x, v - z) < 3.2)) continue; // keep trees from overlapping
-    spots.push([x, z]);
-    const t = rnd() < .45 ? TREES.fir() : rnd() < .85 ? TREES.pine() : TREES.dead();
-    t.position.set(x, 0, z); t.scale.setScalar(.9 + rnd() * .7); t.rotation.y = rnd() * 6; S.add(t);
+    const q = rnd(), kd = q < .2 ? 'fir' : q < .32 ? 'pine' : q < .62 ? 'oak' : q < .9 ? 'maple' : 'dead', sc = .9 + rnd() * .7, cr = { fir: 2, pine: 1.7, oak: 3.1, maple: 2.6, dead: 1.4 }[kd] * sc;
+    if (spots.some(([u, v, w]) => Math.hypot(u - x, v - z) < w + cr + .2)) continue; // canopies never overlap
+    spots.push([x, z, cr]);
+    const t = TREES[kd]();
+    t.position.set(x, 0, z); t.scale.setScalar(sc); t.rotation.y = rnd() * 6; S.add(t);
   }
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
