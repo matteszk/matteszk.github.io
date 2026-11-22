@@ -46,8 +46,9 @@
 
   // ground: same treatment as the intro - per-face meadow colours with dirt patches, under a soft mottled grass texture
   const gg = new THREE.PlaneGeometry(80, 60, 40, 30); gg.rotateX(-Math.PI / 2);
+  const groundY = (x, z) => Math.sin(x * .3) * .12 + Math.cos(z * .25) * .12 + Math.max(0, Math.hypot(x, z) - 10) * .04;
   { const gp0 = gg.attributes.position;
-    for (let i = 0; i < gp0.count; i++) { const x = gp0.getX(i), z = gp0.getZ(i), d = Math.hypot(x, z); gp0.setY(i, Math.sin(x * .3) * .12 + Math.cos(z * .25) * .12 + Math.max(0, d - 10) * .04); } }
+    for (let i = 0; i < gp0.count; i++) { const x = gp0.getX(i), z = gp0.getZ(i), d = Math.hypot(x, z); gp0.setY(i, groundY(x, z)); } }
   gg.computeVertexNormals();
   const gn = gg.toNonIndexed(), gp = gn.attributes.position, cols = [];
   for (let i = 0; i < gp.count; i += 3) {
@@ -82,7 +83,7 @@
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
   // the invisible clearing the goat can wander: a wide, shallow oval
-  const RING = { x: 2.2, z: .2, rx: 5.2, rz: 3.4 };
+  const RING = { x: -.4, z: .2, rx: 6.5, rz: 4.25 };
   S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
 
   // --- the goat, built exactly as in the intro ---
@@ -126,7 +127,8 @@
     const hf = B(.2, .14, .24, hoofM); hf.position.set(0, -.72, .03); knee.add(hf); return { hip, knee }; }
   // diagonal pairs step together: front-left with back-right, front-right with back-left
   const LEGS = [[leg(.3, .7), 0], [leg(-.3, .7), Math.PI], [leg(.3, -.75), Math.PI], [leg(-.3, -.75), 0]];
-  rig.position.y = -.13;
+  // stand the goat on his hooves: measure how far the hooves reach below the rig and lift by that much
+  rig.position.y = 0; goat.updateMatrixWorld(true); const BASE = -new THREE.Box3().setFromObject(goat).min.y - .03; rig.position.y = BASE;
   const HOME = new THREE.Vector3(1.2, 0, -1.3);
   goat.position.copy(HOME); goat.rotation.y = -.75; S.add(goat);
 
@@ -257,8 +259,9 @@
       if (appleT >= .24) { appleState = 'fall'; apple.scale.setScalar(appleSize); }
     } else if (appleState === 'fall') { // drop, then a couple of soft bounces
       appleVy -= 24 * dt; apple.position.y += appleVy * dt; apple.rotation.x += dt * 1.5;
-      if (apple.position.y <= APPLE_R) {
-        apple.position.y = APPLE_R;
+      const floorY = groundY(apple.position.x, apple.position.z) + APPLE_R;
+      if (apple.position.y <= floorY) {
+        apple.position.y = floorY;
         if (bounces < 2 && Math.abs(appleVy) > 1.2) { appleVy = -appleVy * .28; bounces++; } else { appleVy = 0; appleState = 'rest'; }
       }
     }
@@ -296,7 +299,7 @@
     if (moving) walkPh += dt * 7;
     LEGS.forEach(([l, off]) => { const sw = Math.sin(walkPh + off) * moving;
       l.hip.rotation.x = lerp(l.hip.rotation.x, sw * .4, Math.min(1, dt * 10)); l.knee.rotation.x = lerp(l.knee.rotation.x, Math.max(0, -sw) * .5, Math.min(1, dt * 10)); });
-    rig.position.y = -.13 + Math.abs(Math.sin(walkPh)) * .04 * moving;
+    rig.position.y = BASE + Math.abs(Math.sin(walkPh)) * .04 * moving;
 
     // head: down only while eating; up and glancing around otherwise
     const looking = navPtr !== null && (state === 'idle' || state === 'eat');
@@ -319,6 +322,7 @@
     tail.rotation.x = -.5 + Math.sin(t * (moving ? 5 : 2.4)) * .25;
     beard.rotation.x = Math.sin(t * 1.3) * .05;
     if (hopT >= 0) hop(dt);
+    goat.position.y = groundY(goat.position.x, goat.position.z); // follow the gentle roll of the ground
     placeBlob();
   }
 
@@ -341,7 +345,7 @@
       const d = Math.exp(-u * 5) * Math.cos(u * 9);
       y = -.12 * d; pitch = .06 * d; fh = .2 * d; fk = .4 * d; rh = -.15 * d; rk = .35 * d; nk = .1 * d; }
     else { hopT = -1; return; }
-    rig.position.y = -.13 + y; body.rotation.x = pitch;
+    rig.position.y = BASE + y; body.rotation.x = pitch;
     LEGS.forEach(([l], i) => { const front = i < 2; l.hip.rotation.x = front ? fh : rh; l.knee.rotation.x = front ? fk : rk; });
     neck.rotation.x += nk; head.rotation.z = tw * (hopSide);
   }
