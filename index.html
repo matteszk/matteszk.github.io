@@ -595,7 +595,7 @@ const board=new THREE.Group();
  const t1=bb(7.9,.26,.34,dk,-.1,5.45,0);t1.rotation.z=.035;const t2=bb(7.2,.3,.36,dk,.15,1.72,0);t2.rotation.z=-.02;
  const lp=bb(2.2,.5,.12,C('#6a5a48'),2.6,1.4,.2);lp.rotation.z=-.22; // loose plank hanging off one nail
  [[-3.6,5.45],[3.6,5.3],[-3.6,1.72],[3.6,1.74]].forEach(([x,y])=>{const r=bb(.62,.16,.62,C('#8a7a5c'),x,y,0);r.rotation.y=.4}); // rope lashings
- board.position.set(BRD.x,hgt(BRD.x,BRD.z)-.1,BRD.z);S.add(board)}
+ board.position.set(BRD.x,hgt(BRD.x,BRD.z)-.1,BRD.z);board.visible=false;/* bulletin board retired: built but never shown */}
 // wraps a 2D context so straight lines and arcs come out wobbly, like pen on paper
 function sketchCtx(x){let sd=1;const r=()=>{sd=(sd*9301+49297)%233280;return sd/233280-.5};let px=0,py=0,sx=0,sy=0;
  const seg=(x0,y0,x1,y1)=>{const n=Math.max(2,Math.hypot(x1-x0,y1-y0)/7|0);for(let i=1;i<=n;i++){const t=i/n;x.lineTo(x0+(x1-x0)*t+r()*1.8,y0+(y1-y0)*t+r()*1.8)}};
