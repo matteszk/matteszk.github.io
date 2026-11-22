@@ -474,20 +474,22 @@ function gallop(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation
  body.rotation.x=Math.sin(ph*2)*.04;neck.rotation.x=-Math.sin(ph*2)*.08;head.rotation.x=Math.sin(ph*2+1)*.06;
  tail.rotation.x=-.6+Math.sin(ph*2)*.2}
 // bound: front pair lands, rear pair lands and drives, then a long airborne leap with legs gathering and reaching
-const BOUND=true,BRATE=1.6,LEAD=.08,clamp01=x=>Math.max(0,Math.min(1,x));
+const BOUND=true,BRATE=1.3,LEAD=.08,clamp01=x=>Math.max(0,Math.min(1,x));
 // keyframed from a real goat running (screen recording): land on the front pair, rear pair lands well forward and drives,
 // then a long suspension with every leg stretched outward - fronts reaching ahead, hinds trailing behind with the hocks pointing back
 const kf=(K,u)=>{for(let i=0;i<K.length-1;i++){const[a,va]=K[i],[b,vb]=K[i+1];if(u>=a&&u<=b){const t=(u-a)/(b-a),e=t*t*(3-2*t);return va+(vb-va)*e}}return K[0][1]};
 const BK={fh:[[0,-.45],[.2,.35],[.36,.55],[.52,-.15],[.68,-.7],[.86,-.6],[1,-.45]],
  fk:[[0,0],[.2,.05],[.36,.75],[.5,.9],[.62,.2],[.7,0],[1,0]],
- rh:[[0,-.35],[.15,-.45],[.4,.45],[.6,.75],[.78,.3],[1,-.35]],
- rk:[[0,-.6],[.15,-.35],[.3,-.5],[.42,-.12],[.6,-.18],[.8,-.85],[1,-.6]],
- y:[[0,-.04],[.12,-.09],[.3,-.06],[.42,0],[.64,.46],[.86,.02],[1,-.04]],
- p:[[0,.1],[.15,.06],[.32,-.1],[.45,-.14],[.64,0],[.85,.1],[1,.1]]};
+ // hind legs: thigh angled back so the hock always points backward (same hoof path as before)
+ rh:[[0,0],[.15,-.1],[.4,.8],[.6,1.1],[.78,.65],[1,0]],
+ rk:[[0,-.95],[.15,-.7],[.3,-.85],[.42,-.47],[.6,-.53],[.8,-1.2],[1,-.95]],
+ y:[[0,-.03],[.22,-.08],[.45,.06],[.66,.3],[.86,.1],[1,-.03]], // a smooth rolling rise and fall, no snap
+ p:[[0,.08],[.2,.05],[.4,-.1],[.62,-.04],[.85,.07],[1,.08]],
+ nk:[[0,.1],[.18,.2],[.42,-.12],[.68,-.06],[.88,.06],[1,.1]]}; // neck dips as the fronts land, rises on the push
 function bound(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;
  const u=((ph/(2*Math.PI))%1+1)%1,pitch=kf(BK.p,u);
  L.forEach((l,i)=>{const lu=(((u-(i%2?LEAD:0))%1)+1)%1;l.hip.rotation.x=kf(l.front?BK.fh:BK.rh,lu);l.knee.rotation.x=kf(l.front?BK.fk:BK.rk,lu)});
- rig.position.y=-.13+kf(BK.y,u);body.rotation.x=pitch;neck.rotation.x=-pitch*.7+.05;head.rotation.x=-pitch*.3;
+ rig.position.y=-.13+kf(BK.y,u);body.rotation.x=pitch;neck.rotation.x=-pitch*.7+.05+kf(BK.nk,u);head.rotation.x=-pitch*.3-kf(BK.nk,u)*.4;
  beard.rotation.x=Math.sin(ph*2+1)*.12;tail.rotation.x=-.4-pitch*1.5}
 const apple=new THREE.Group();
 {// tipped-over barrel with apples spilling out across the grass
