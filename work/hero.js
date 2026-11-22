@@ -83,7 +83,7 @@
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
   // the invisible clearing the goat can wander: a wide, shallow oval
-  const RING = { x: -.4, z: .2, rx: 8.1, rz: 5.3 };
+  const RING = { x: 2.84, z: .2, rx: 8.1, rz: 5.3 };
   S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
 
   // --- the goat, built exactly as in the intro ---
