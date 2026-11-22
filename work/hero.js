@@ -22,7 +22,7 @@
     vertexShader: 'varying float h;void main(){h=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
     fragmentShader: 'varying float h;void main(){vec3 a=vec3(.62,.45,.47),b=vec3(.38,.31,.45),c=vec3(.13,.12,.25);vec3 col=mix(a,b,smoothstep(0.,.18,h));col=mix(col,c,smoothstep(.18,.75,h));gl_FragColor=vec4(col,1.);}' })));
   const cam = new THREE.PerspectiveCamera(40, 2, 0.1, 100);
-  const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(1.2, 1.45, 0);
+  const camBase = new THREE.Vector3(0, 4.3, 10.5), look = new THREE.Vector3(1.2, .85, -.6); // higher and farther back, looking down on the goat
 
   // light: the intro's dusk - lilac sky fill and a low peach sun
   const hemi = new THREE.HemisphereLight(0xc8b0cc, 0x4a3e36, 1.15); S.add(hemi);
