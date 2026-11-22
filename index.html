@@ -653,7 +653,8 @@ function placeAnchors(){const r=cv.getBoundingClientRect();NOTES.forEach(n=>{
 
 // mode switching: film <-> board
 let mode='film',modeT=0;
-function enterBoard(){if(mode!=='film')return;if(typeof openingOnly==='function')openingOnly(false);document.body.classList.add('crtoff');window._br=undefined;mode='board';boardT=0;document.body.classList.add('atboard');setTimeout(()=>NOTES[0].a.focus(),900)}
+function enterBoard(){location.href='/work/';return; // Press Start goes straight to the portfolio (the bulletin board scene is retired)
+ if(mode!=='film')return;if(typeof openingOnly==='function')openingOnly(false);document.body.classList.add('crtoff');window._br=undefined;mode='board';boardT=0;document.body.classList.add('atboard');setTimeout(()=>NOTES[0].a.focus(),900)}
 function leaveBoard(){if(mode!=='board')return;zz.forEach(z=>z.visible=false);document.body.classList.add('seen');fade.style.opacity=0;mode='film';document.body.classList.remove('atboard')}
 let filmT=0,boardT=0;window.enterBoard=enterBoard;window.leaveBoard=leaveBoard;
 const shots=[
