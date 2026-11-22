@@ -132,6 +132,14 @@
   .memory:focus-within{outline:2px solid var(--gold);outline-offset:3px}
   @media (max-width:520px){.memory{grid-template-columns:96px 1fr;gap:12px}.memory img{width:96px}}
   @media (prefers-reduced-motion:reduce){.memory,.memory a.cardlink{transition:none}}
+
+  /* selected work cards in the same dark style as the fond memories rows */
+  .card{background:var(--bg2);background-image:none;color:var(--ink);border:1px solid var(--line);border-radius:6px;box-shadow:none;overflow:hidden;
+    transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s ease,box-shadow .35s cubic-bezier(.2,.8,.2,1)}
+  .card:hover{border-color:var(--gold);box-shadow:0 14px 30px rgba(0,0,0,.4)}
+  .card .art{border-bottom:1px solid var(--line)}
+  .card .meta,.card p.aside{color:var(--muted)}
+  .tags li{background:rgba(231,184,74,.10);color:var(--muted)}
 </style>
 </head>
 <body>
