@@ -706,17 +706,24 @@ function breath(pan,vol,inhale){if(!AC||!soundOn||!inhale)return;const t=AC.curr
  const am=AC.createGain(),lfo=AC.createOscillator(),ld=AC.createGain();lfo.frequency.value=22+Math.random()*6;ld.gain.value=.5;am.gain.value=.5;lfo.connect(ld);ld.connect(am.gain);
  const env=AC.createGain();env.gain.setValueAtTime(.0001,t);env.gain.exponentialRampToValueAtTime(.35,t+dur*.45);env.gain.exponentialRampToValueAtTime(.0001,t+dur);
  o.connect(lp);lp.connect(am);am.connect(env);env.connect(out);o.start(t);lfo.start(t);o.stop(t+dur);lfo.stop(t+dur)}
-// ---------- background music: "Carpathian wind" (flute + cimbalom over a faint breeze) ----------
-const MUS={bpm:58,drone:[38,50],
- seq:[[69,1.5],[70,.5],[69,1],[66,2],[null,1],[67,1],[66,.5],[63,.5],[62,3],[null,1],[62,.5],[63,.5],[66,1],[67,1],[69,2],[72,1],[70,1],[69,3],[null,1],[66,1],[63,1],[62,4],[null,2]],
- cimb:[[50,54,57],[51,55,58],[50,54,57],[48,51,55],[50,54,57],[51,55,58],[48,51,55],[50,54,57]]};
+// ---------- background music: "Over the pass" (upbeat cimbalom and flute adventure tune in D major) ----------
+const MUS={bpm:112,drone:[38,45],
+ seq:[[74,.5],[73,.5],[71,.5],[69,.5],[71,.5],[73,.5],[74,1],
+      [74,.5],[76,.5],[74,.5],[71,.5],[67,1],[71,1],
+      [69,.5],[71,.5],[73,.5],[76,.5],[73,1],[69,1],
+      [74,1.5],[69,.5],[66,1],[null,1],
+      [71,.5],[73,.5],[74,.5],[71,.5],[66,1],[71,1],
+      [67,.5],[69,.5],[71,.5],[74,.5],[79,1],[76,1],
+      [76,.5],[74,.5],[73,.5],[71,.5],[69,.5],[71,.5],[73,1],
+      [74,2],[null,2]],
+ cimb:[[50,54,57],[55,59,62],[57,61,64],[50,54,57],[47,50,54],[55,59,62],[57,61,64],[50,54,57]]};
 let mBus=null,mSend=null,mNodes=[],mTimer=null,mOn=false;
 const mhz=m=>440*Math.pow(2,(m-69)/12);
 function musicBus(){if(mBus)return;mBus=AC.createGain();mBus.gain.value=.55;mBus.connect(master);
  const len=AC.sampleRate*3.2,ir=AC.createBuffer(2,len,AC.sampleRate);for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
  const rev=AC.createConvolver();rev.buffer=ir;const wet=AC.createGain();wet.gain.value=.5;rev.connect(wet);wet.connect(mBus);
  mSend=AC.createGain();mSend.connect(rev);mSend.connect(mBus)}
-function mFlute(m,t,dur){const o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain(),lfo=AC.createOscillator(),lg=AC.createGain();
+function mFlute(m,t,dur){dur=dur<.4?dur*.8:dur;const o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain(),lfo=AC.createOscillator(),lg=AC.createGain();
  o.type='sine';o2.type='triangle';o.frequency.value=o2.frequency.value=mhz(m);lfo.frequency.value=5.2;lg.gain.value=mhz(m)*.006;lfo.connect(lg);lg.connect(o.frequency);lg.connect(o2.frequency);
  const g2=AC.createGain();g2.gain.value=.06;o2.connect(g2);g2.connect(g);o.connect(g);
  lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(mhz(m)*.007,t+Math.min(.6,dur*.6));
@@ -726,7 +733,7 @@ function mCimb(m,t,vel=1){[0,.12].forEach((det,k)=>{[[1,1],[2,.35],[3.01,.15],[4
   o.type='sine';o.frequency.value=mhz(m)*mul*(1+det/100);const dec=1.4/mul;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.045*amp*vel*(k?.7:1),t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+dec);
   const pan=AC.createStereoPanner?AC.createStereoPanner():null;if(pan){pan.pan.value=k?.25:-.15;o.connect(g);g.connect(pan);pan.connect(mSend)}else{o.connect(g);g.connect(mSend)}o.start(t);o.stop(t+dec+.05);mNodes.push(o)})})}
 function mDrone(t,len){MUS.drone.forEach((m,i)=>{const o=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter();o.type='sawtooth';o.frequency.value=mhz(m);f.type='lowpass';f.frequency.value=380;
- g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.02-i*.006,t+3);g.gain.setValueAtTime(.02-i*.006,t+len-3);g.gain.linearRampToValueAtTime(.0001,t+len);o.connect(f);f.connect(g);g.connect(mSend);o.start(t);o.stop(t+len+.1);mNodes.push(o)})}
+ g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.012-i*.004,t+3);g.gain.setValueAtTime(.012-i*.004,t+len-3);g.gain.linearRampToValueAtTime(.0001,t+len);o.connect(f);f.connect(g);g.connect(mSend);o.start(t);o.stop(t+len+.1);mNodes.push(o)})}
 function mWind(){const len=AC.sampleRate*4,b=AC.createBuffer(1,len,AC.sampleRate),d=b.getChannelData(0);let last=0;for(let i=0;i<len;i++){last=last*.985+(Math.random()*2-1)*.015;d[i]=last*6}
  const src=AC.createBufferSource();src.buffer=b;src.loop=true;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=500;f.Q.value=.7;
  const lfo=AC.createOscillator(),lg=AC.createGain();lfo.frequency.value=.09;lg.gain.value=320;lfo.connect(lg);lg.connect(f.frequency);
@@ -734,13 +741,14 @@ function mWind(){const len=AC.sampleRate*4,b=AC.createBuffer(1,len,AC.sampleRate
 // busier cimbalom: running eighth notes through each chord, rolled downbeats, tremolo flourishes
 function mCimbPart(start,beat,beats){const run=[0,2,1,2,0,1,2,1];
  for(let e=0;e<beats*2;e++){const b=e/2,ch=MUS.cimb[Math.floor(b/4)%MUS.cimb.length],t=start+e*beat/2,oct=(e%16>=8?12:0);
-  if(e%8===0){[0,1,2].forEach(k=>mCimb(ch[k]+12,t+k*.04,.6));continue}
+  if(e%4===0)mCimb(ch[0]-12,t,e%8===0?.9:.65); // bouncing bass on 1 and 3
+  if(e%8===0){[0,1,2].forEach(k=>mCimb(ch[k]+12,t+k*.03,.6));continue}
   mCimb(ch[run[e%8]]+oct,t,e%2?.35:.5);
   if(e%16===13)[0,.07,.14,.21,.28].forEach(o=>mCimb(ch[2]+12,t+o,.22))}}
 function musicStart(){if(mOn||!AC)return;mOn=true;musicBus();mWind();const beat=60/MUS.bpm,beats=MUS.seq.reduce((a,[,b])=>a+b,0),total=beats*beat;
  const t0=AC.currentTime+.8;
  const loop=start=>{if(!mOn)return;let t=start;mDrone(start,total+1);mCimbPart(start,beat,beats);
-  if(start-t0>=58)MUS.seq.forEach(([m,b])=>{if(m!=null)mFlute(m,t,b*beat*.95);t+=b*beat}); // cimbalom alone for the first minute, then the ocarina joins
+  if(start-t0>=total-.1)MUS.seq.forEach(([m,b])=>{if(m!=null)mFlute(m,t,b*beat*.95);t+=b*beat}); // cimbalom alone the first time round, then the flute takes the tune
   mTimer=setTimeout(()=>loop(start+total),(start+total-AC.currentTime-.6)*1000)};
  loop(t0)}
 function musicStop(){mOn=false;clearTimeout(mTimer);mNodes.forEach(n=>{try{n.stop()}catch(e){}});mNodes=[]}
