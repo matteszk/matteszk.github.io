@@ -12,17 +12,21 @@
   try { R = new THREE.WebGLRenderer({ canvas: cv, antialias: false, alpha: false }); }
   catch (e) { wrap.hidden = true; return; }
   R.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
-  const BG = 0x1c1820;
+  const BG = 0x9e7378; // dusty-rose dusk, as in the intro
   R.setClearColor(BG);
 
   const S = new THREE.Scene();
-  S.fog = new THREE.Fog(0x241d2c, 9, 34);
+  S.fog = new THREE.Fog(0x8a6670, 10, 42);
+  // the intro's dusk sky: dusty rose at the horizon to deep violet overhead
+  S.add(new THREE.Mesh(new THREE.SphereGeometry(80, 16, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
+    vertexShader: 'varying float h;void main(){h=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader: 'varying float h;void main(){vec3 a=vec3(.62,.45,.47),b=vec3(.38,.31,.45),c=vec3(.13,.12,.25);vec3 col=mix(a,b,smoothstep(0.,.18,h));col=mix(col,c,smoothstep(.18,.75,h));gl_FragColor=vec4(col,1.);}' })));
   const cam = new THREE.PerspectiveCamera(40, 2, 0.1, 100);
-  const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(1.2, 1.45, 0);
+  const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(1.2, 2.15, 0); // aimed a bit high so the goat sits below the glass nav, with sky above
 
-  // light: cool moonlight from above-left, dim purple fill
-  const hemi = new THREE.HemisphereLight(0x8c86b8, 0x1a1712, 0.95); S.add(hemi);
-  const moon = new THREE.DirectionalLight(0xc9d4ff, 0.75); moon.position.set(-6, 10, 4); S.add(moon);
+  // light: the intro's dusk - lilac sky fill and a low peach sun
+  const hemi = new THREE.HemisphereLight(0xb8a2c2, 0x2c2622, 0.85); S.add(hemi);
+  const moon = new THREE.DirectionalLight(0xffcfb0, 0.7); moon.position.set(-6, 6, 4); S.add(moon);
   const warm = new THREE.PointLight(0xffc860, 0.6, 7); warm.position.set(1.6, 2.2, 2.2); S.add(warm);
 
   // --- materials and helpers, matching the intro ---
