@@ -1,4 +1,4 @@
-// /work hero: the intro's black goat idling in a night forest, with fireflies and
+// /work hero: the intro's black goat idling in a dusk forest (intro palette), and
 // foreground trunks. The camera eases toward the mouse while it's over the scene.
 // Decorative only. Pauses when off screen or in a background tab; a single still
 // frame for reduced motion; hides itself if WebGL isn't available.
@@ -16,7 +16,7 @@
   R.setClearColor(BG);
 
   const S = new THREE.Scene();
-  S.fog = new THREE.Fog(0x8a6670, 10, 42);
+  S.fog = new THREE.Fog(0x9e7378, 12, 46);
   // the intro's dusk sky: dusty rose at the horizon to deep violet overhead
   S.add(new THREE.Mesh(new THREE.SphereGeometry(80, 16, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
     vertexShader: 'varying float h;void main(){h=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
@@ -25,8 +25,8 @@
   const camBase = new THREE.Vector3(0, 2.1, 7.2), look = new THREE.Vector3(1.2, 2.15, 0); // aimed a bit high so the goat sits below the glass nav, with sky above
 
   // light: the intro's dusk - lilac sky fill and a low peach sun
-  const hemi = new THREE.HemisphereLight(0xb8a2c2, 0x2c2622, 0.85); S.add(hemi);
-  const moon = new THREE.DirectionalLight(0xffcfb0, 0.7); moon.position.set(-6, 6, 4); S.add(moon);
+  const hemi = new THREE.HemisphereLight(0xc8b0cc, 0x4a3e36, 1.15); S.add(hemi);
+  const moon = new THREE.DirectionalLight(0xffcfb0, 0.95); moon.position.set(-6, 6, 4); S.add(moon);
   const warm = new THREE.PointLight(0xffc860, 0.6, 7); warm.position.set(1.6, 2.2, 2.2); S.add(warm);
 
   // --- materials and helpers, matching the intro ---
@@ -50,7 +50,7 @@
     const cx = (gp.getX(i) + gp.getX(i + 1) + gp.getX(i + 2)) / 3, cz = (gp.getZ(i) + gp.getZ(i + 1) + gp.getZ(i + 2)) / 3, r = rnd() * .05;
     const dn = Math.sin(cx * .45 + 1.3) * Math.cos(cz * .6) + Math.sin(cx * 1.2 + cz * .9) * .45, dd = Math.min(1, Math.max(0, (dn - .75) * 3));
     const bl = Math.sin(cx * .9 + .7) * Math.cos(cz * 1.1 + 1.9) + Math.sin(cx * 2.1 - cz * 1.7) * .6, bk = 1 + bl * .09, yl = Math.max(0, bl) * .04;
-    const fade = Math.max(.5, 1 - Math.hypot(cx, cz) / 32), t = .4;
+    const fade = 1, t = .4;
     for (let k = 0; k < 3; k++) cols.push((((.3 + t * .09 + r) * (1 - dd) + (.42 + r) * dd) * bk + yl) * fade, (((.34 + t * .09 + r) * (1 - dd) + (.33 + r) * dd) * bk + yl * .6) * fade, (((.21 + t * .04 + r * .6) * (1 - dd) + (.22 + r * .5) * dd) * bk) * fade);
   }
   gn.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
@@ -155,7 +155,7 @@
   for (let i = 0; i < 11; i++) {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: fTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
     const home = new THREE.Vector3((rnd() - .5) * 12, .6 + rnd() * 3.2, (rnd() - .6) * 8);
-    sp.scale.setScalar(.32 + rnd() * .2); S.add(sp);
+    sp.scale.setScalar(.32 + rnd() * .2); sp.visible = false; S.add(sp); // fireflies off: it's dusk now, not night
     FLIES.push({ sp, home, a: rnd() * 100, b: rnd() * 100, sp1: .25 + rnd() * .35, ph: rnd() * 6.28, rate: .6 + rnd() * 1.1 });
   }
 
@@ -350,7 +350,7 @@
       f.sp.position.set(f.home.x + Math.sin(f.a) * 1.3 + Math.sin(f.b * 1.7) * .5, f.home.y + Math.sin(f.b) * .6, f.home.z + Math.cos(f.a * .8) * 1.1);
       f.sp.material.opacity = Math.max(.08, Math.pow(Math.max(0, Math.sin(t * f.rate + f.ph)), 3));
     });
-    warm.position.copy(FLIES[0].sp.position); warm.intensity = .6 * FLIES[0].sp.material.opacity;
+    warm.position.copy(FLIES[0].sp.position); warm.intensity = 0;
     R.render(S, cam);
     requestAnimationFrame(frame);
   }
