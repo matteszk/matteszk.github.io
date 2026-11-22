@@ -236,7 +236,7 @@
   let nextBlink = 2, blinkT = -1, down = 0, yaw = 0, lift = 0, glance = 0, glanceTo = 0, nextGlance = 3;
   const lerp = (a, b, k) => a + (b - a) * k, sstep = x => x * x * (3 - 2 * x);
   // debug (local/preview copies only, or #dev): show the clickable clearing as a translucent slab with its axes
-  if (location.hash === '#dev' || !/(^|\.)matthewszklarz\.com$|\.github\.io$/.test(location.hostname)) {
+  if (location.hash === '#dev') { // debug overlay only on request: add #dev to the URL
     const zone = new THREE.Group(); zone.position.set(RING.x, 0, RING.z); S.add(zone);
     const slab = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .5, 48), new THREE.MeshBasicMaterial({ color: 0xe7b84a, transparent: true, opacity: .18, depthWrite: false, fog: false }));
     slab.scale.set(RING.rx, 1, RING.rz); slab.position.y = .25; zone.add(slab);
