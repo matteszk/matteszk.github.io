@@ -124,7 +124,7 @@ const PX=1;
 const cv=document.getElementById('c');
 let R;try{R=new THREE.WebGLRenderer({canvas:cv,antialias:false})}catch(e){document.getElementById('fallback').style.display='flex';return}R.setPixelRatio(1);
 const S=new THREE.Scene();
-const fogC=new THREE.Color('#86686f');S.background=fogC;S.fog=new THREE.Fog(fogC,50,330);
+const fogC=new THREE.Color('#86686f');S.background=fogC;S.fog=new THREE.Fog(new THREE.Color('#4a3b44'),50,330); // distance fades to a dusky tone that matches the far ground, not the pale sky
 const cam=new THREE.PerspectiveCamera(50,1,.1,900);
 function size(){R.setSize(Math.ceil(innerWidth/PX),Math.ceil(innerHeight/PX),false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
 addEventListener('resize',size);size();
@@ -164,7 +164,8 @@ for(let i=0;i<gp.count;i+=3){const y=(gp.getY(i)+gp.getY(i+1)+gp.getY(i+2))/3,t=
  const dn=Math.sin(cx*.045+1.3)*Math.cos(cz*.06)+Math.sin(cx*.12+cz*.09)*.45+Math.sin(cx*.31-cz*.27)*.2;
  const d=Math.min(1,Math.max(0,(dn-.75)*3));
  const bl=Math.sin(cx*.09+.7)*Math.cos(cz*.11+1.9)+Math.sin(cx*.21-cz*.17)*.6+Math.sin(cx*.5+cz*.43)*.3,bk=1+bl*.09,yl=Math.max(0,bl)*.04;
- for(let k=0;k<3;k++)cols.push(((.3+t*.09+r)*(1-d)+(.42+r)*d)*bk+yl,((.34+t*.09+r)*(1-d)+(.33+r)*d)*bk+yl*.6,((.21+t*.04+r*.6)*(1-d)+(.22+r*.5)*d)*bk)}
+ const hz=Math.min(1,Math.max(0,(Math.hypot(cx-110,cz+20)-200)/420))*.5; // far ground fades toward a dusky tone, never toward pale fog
+ for(let k=0;k<3;k++)cols.push((((.3+t*.09+r)*(1-d)+(.42+r)*d)*bk+yl)*(1-hz)+.33*hz,(((.34+t*.09+r)*(1-d)+(.33+r)*d)*bk+yl*.6)*(1-hz)+.26*hz,(((.21+t*.04+r*.6)*(1-d)+(.22+r*.5)*d)*bk)*(1-hz)+.29*hz)}
 gn.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
 const tc=document.createElement('canvas');tc.width=tc.height=64;const tx=tc.getContext('2d');
 const wrapDraw=(fn)=>{for(const ox of[-64,0,64])for(const oy of[-64,0,64]){tx.save();tx.translate(ox,oy);fn();tx.restore()}};
@@ -174,7 +175,7 @@ for(let i=0;i<34;i++){const x=Math.random()*64,y=Math.random()*64,r=4+Math.rando
  wrapDraw(()=>{const g=tx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');tx.fillStyle=g;tx.beginPath();tx.ellipse(x,y,r,r*sq,rot,0,7);tx.fill()})}
 const gt=new THREE.CanvasTexture(tc);gt.wrapS=gt.wrapT=THREE.RepeatWrapping;gt.repeat.set(70,70);
 gt.magFilter=THREE.LinearFilter;gt.minFilter=THREE.LinearMipmapLinearFilter;gt.anisotropy=R.capabilities.getMaxAnisotropy();
-S.add(new THREE.Mesh(gn,new THREE.MeshLambertMaterial({vertexColors:true,map:gt})));
+S.add(new THREE.Mesh(gn,new THREE.MeshLambertMaterial({vertexColors:true,map:gt,fog:false})));
 
 // trees + rocks (kept off the hill crest and run lanes)
 const M=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true});
@@ -206,12 +207,6 @@ for(let i=0,n=0;i<4000&&n<420;i++){const x=(Math.random()-.5)*700,z=(Math.random
  const tree=Math.random()<.78,s=.7+Math.random()*1.2,m=tree?TREES[kinds[Math.random()*kinds.length|0]]():new THREE.Mesh(rg,rm);m.scale.setScalar(s);
  m.position.set(x,hgt(x,z)+(tree?-.1:.3),z);m.rotation.y=Math.random()*6;S.add(m)}
 
-// eastern range behind the castle so it sits in a valley, not out of nowhere
-{const mm2=new THREE.MeshLambertMaterial({color:'#7d7488',flatShading:true}),sn2=new THREE.MeshLambertMaterial({color:'#e6ecff',flatShading:true}),
-  ft=new THREE.MeshLambertMaterial({color:'#5e6a5a',flatShading:true});
- // nearer forested foothills between castle and peaks
- for(let i=0;i<10;i++){const h=24+Math.random()*20,r=h*1.6,z=-120+i*36+Math.random()*12,x=490+Math.random()*30;
-  const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,8),ft);m.position.set(x,hgt(Math.min(x,590),z)+h/2-8,z);m.rotation.y=Math.random();S.add(m)}}
 // a ring of Tatra-style massifs around the whole valley: sharp rocky summits over green lower slopes, hazed toward the fog colour
 {const fc=new THREE.Color('#86686f').multiplyScalar(.62),RC={x:110,z:-20,rx:560,rz:500};
  const grass=new THREE.Color('#3e5634'),scrub=new THREE.Color('#5c6a44'),rock=new THREE.Color('#8b8590'),rockD=new THREE.Color('#5f5866'),snowC=new THREE.Color('#dfe2ea');
@@ -237,6 +232,15 @@ for(let i=0,n=0;i<4000&&n<420;i++){const x=(Math.random()-.5)*700,z=(Math.random
    m.position.set(x,0,z);m.rotation.y=-a+Math.PI/2;m.rotation.y+=Math.PI;S.add(m)}};
  place(1.18,12,140,60,.55,.5); // far row: the tallest summits, palest in the haze
  place(1,14,80,50,.38,0);      // near row
+ // foothills between the castle and the range: the low ones are grassy knolls, the tall ones small rocky massifs
+ const knollM=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,map:gt,fog:false});
+ for(let i=0;i<10;i++){const h=24+Math.random()*20,z=-120+i*36+Math.random()*12,x=490+Math.random()*30,base=hgt(Math.min(x,590),z);
+  if(h>36){const m=massif(150+Math.random()*60,110,h*1.9,.3);m.position.set(x,base,z);m.rotation.y=Math.PI/2+(Math.random()-.5)*.4;S.add(m);continue}
+  const kg=new THREE.ConeGeometry(h*1.7,h,9,3).toNonIndexed(),kp=kg.attributes.position,kc=[];
+  for(let v=0;v<kp.count;v++){kp.setX(v,kp.getX(v)*(1+(Math.random()-.5)*.08));kp.setZ(v,kp.getZ(v)*(1+(Math.random()-.5)*.08))}
+  for(let v=0;v<kp.count;v+=3){const r=Math.random()*.05;for(let k=0;k<3;k++)kc.push(.25+r,.29+r,.19+r*.6)}
+  kg.setAttribute('color',new THREE.Float32BufferAttribute(kc,3));kg.computeVertexNormals();
+  const m=new THREE.Mesh(kg,knollM);m.scale.y=.75;m.position.set(x,base+h*.375-6,z);m.rotation.y=Math.random();S.add(m)}
 }
 // gothic castle on a crag (east, beyond x=200 lane)
 const castle=new THREE.Group();
