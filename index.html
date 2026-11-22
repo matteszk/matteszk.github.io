@@ -640,7 +640,7 @@ function leaveBoard(){if(mode!=='board')return;zz.forEach(z=>z.visible=false);do
 let filmT=0,boardT=0;window.enterBoard=enterBoard;window.leaveBoard=leaveBoard;
 const shots=[
  {// 1: hill + setting moon upper right, goat prances across crest
-  start:V(-48,0,0),dir:V(1,0,0),speed:8.5,gait:'gallop',
+  start:V(54,0,0),dir:V(-1,0,0),speed:8.5,gait:'gallop', // crosses the crest right to left
   cam:(gp,lt)=>({pos:V(-4+lt*.06,G(0,55)+3,55),look:V(0,15+lt*.02,0)}),
   moon:(lt)=>V(95,168-lt*3.5,-260)},
  {// 2: low tracking side shot
