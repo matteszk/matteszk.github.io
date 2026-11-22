@@ -117,8 +117,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-if(matchMedia('(prefers-reduced-motion: reduce)').matches&&location.hash!=='#play'&&location.hash!=='#dev')location.replace('/work/');
-if(location.hash==='#dev')document.documentElement.classList.add('dev');
+const DEV=location.hash==='#dev'||!/(^|\.)matthewszklarz\.com$|\.github\.io$/.test(location.hostname);if(DEV)document.documentElement.classList.add('dev'); // scene buttons: on for any local/preview copy, off on the live site
+if(matchMedia('(prefers-reduced-motion: reduce)').matches&&location.hash!=='#play'&&!DEV)location.replace('/work/');
 (()=>{
 const PX=1;
 const cv=document.getElementById('c');
@@ -856,8 +856,8 @@ function boardFrame(TT){const lt=boardT;
 })();
 </script>
 <script>
-if(matchMedia('(prefers-reduced-motion: reduce)').matches&&location.hash!=='#play'&&location.hash!=='#dev')location.replace('/work/');
-if(location.hash==='#dev')document.documentElement.classList.add('dev');
+if(matchMedia('(prefers-reduced-motion: reduce)').matches&&location.hash!=='#play'&&!(location.hash==='#dev'||!/(^|\.)matthewszklarz\.com$|\.github\.io$/.test(location.hostname)))location.replace('/work/');
+if(DEV)document.documentElement.classList.add('dev');
 (()=>{const n=document.getElementById('noise'),x=n.getContext('2d');n.width=160;n.height=120;const im=x.createImageData(160,120);
  (function f(){const d=im.data;for(let i=0;i<d.length;i+=4){const v=Math.random()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}x.putImageData(im,0,0);setTimeout(()=>requestAnimationFrame(f),80)})()})();
 // Menu
