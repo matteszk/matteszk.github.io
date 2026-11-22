@@ -83,7 +83,7 @@
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
   // the invisible clearing the goat can wander: a wide, shallow oval
-  const RING = { x: -.4, z: .2, rx: 6.5, rz: 4.25 };
+  const RING = { x: -.4, z: .2, rx: 8.1, rz: 5.3 };
   S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
 
   // --- the goat, built exactly as in the intro ---
@@ -166,16 +166,16 @@
     FLIES.push({ sp, home, a: rnd() * 100, b: rnd() * 100, sp1: .25 + rnd() * .35, ph: rnd() * 6.28, rate: .6 + rnd() * 1.1 });
   }
 
-  // --- behavior: idle by default; look up at the pointer while it's in the header nav;
+  // --- behavior: idle by default; his head follows the mouse over the hero;
   //     click the ground inside the ring and an apple pops in, drops, and he walks over to eat it ---
-  const nav = document.querySelector('header.top');
-  let navPtr = null; // pointer x across the window (-1..1) while it's in the header
-  if (nav) {
-    nav.addEventListener('pointermove', e => { navPtr = (e.clientX / innerWidth) * 2 - 1; });
-    nav.addEventListener('pointerleave', () => { navPtr = null; });
-    nav.addEventListener('focusin', () => { if (navPtr === null) navPtr = 0; });
-    nav.addEventListener('focusout', () => { navPtr = null; });
-  }
+  // the goat watches the mouse while it's over the hero: a point where the pointer ray meets head height (or far along it, for the sky)
+  let ptr = null;
+  const lookPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.6), lookHit = new THREE.Vector3(), lookNdc = new THREE.Vector2(), lookRay = new THREE.Raycaster();
+  wrap.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return;
+    const r = wrap.getBoundingClientRect(); lookNdc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); lookRay.setFromCamera(lookNdc, cam);
+    const d = lookRay.ray.direction; if (!(d.y < -.02 && lookRay.ray.intersectPlane(lookPlane, lookHit))) lookHit.copy(lookRay.ray.origin).addScaledVector(d, 30);
+    ptr = { x: lookHit.x, z: lookHit.z, up: Math.max(0, Math.min(1, lookNdc.y * .9 + .25)) }; });
+  wrap.addEventListener('pointerleave', () => { ptr = null; });
 
   // the apple: low-poly, in the intro's orchard colors
   const stemM = M('#4a3020'), leafM = M('#5c8a32');
@@ -290,7 +290,6 @@
         if (Math.abs(fYaw) < .12 && appleState === 'rest') { state = 'eat'; stateT = 0; }
       }
     } else if (state === 'eat') {
-      if (navPtr !== null) stateT -= dt; // pause the meal while he looks up at the nav
       // a few bites: the apple shrinks with each one, then it's gone
       const want = Math.min(4, Math.max(0, Math.floor((stateT - .55) / .6) + 1));
       if (stateT > .55 && want !== stage) { stage = want; appleMesh.geometry = STAGES[kind][stage]; chomp = 1; }
@@ -302,7 +301,7 @@
     rig.position.y = BASE + Math.abs(Math.sin(walkPh)) * .04 * moving;
 
     // head: down only while eating; up and glancing around otherwise
-    const looking = navPtr !== null && (state === 'idle' || state === 'eat');
+    const looking = ptr !== null && state === 'idle';
     const eating = state === 'eat' && !looking;
     down = lerp(down, eating ? 1 : 0, Math.min(1, dt * (eating ? 3 : 4)));
     const e = sstep(Math.max(0, Math.min(1, down)));
@@ -310,9 +309,9 @@
     if (state !== 'idle') glanceTo = 0;
     glance = lerp(glance, glanceTo, Math.min(1, dt * 2.2));
     let wantYaw = glance;
-    if (looking) { wantYaw = navPtr * .7 - goat.rotation.y; wantYaw = Math.max(-1.1, Math.min(1.1, Math.atan2(Math.sin(wantYaw), Math.cos(wantYaw)))); }
+    if (looking) { wantYaw = Math.atan2(ptr.x - goat.position.x, ptr.z - goat.position.z) - goat.rotation.y; wantYaw = Math.max(-1.1, Math.min(1.1, Math.atan2(Math.sin(wantYaw), Math.cos(wantYaw)))); }
     yaw = lerp(yaw, wantYaw * (1 - e), Math.min(1, dt * 6));
-    lift = lerp(lift, looking ? 1 : 0, Math.min(1, dt * 5));
+    lift = lerp(lift, looking ? ptr.up : 0, Math.min(1, dt * 5));
     neck.rotation.x = -.08 - lift * .25 + e * 1.3;
     chomp = Math.max(0, chomp - dt * 5);
     head.rotation.x = e * (.6 - chomp * .22) - lift * .15;
