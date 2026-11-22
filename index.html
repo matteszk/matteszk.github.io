@@ -686,7 +686,7 @@ S.traverse(o=>{if(!o.isMesh)return;(Array.isArray(o.material)?o.material:[o.mate
  if(m&&m.isMeshLambertMaterial&&!m.map&&!m.vertexColors&&!seen.has(m)){seen.add(m);m.map=texOf(o);m.needsUpdate=true}})});
 // ---------- hoof sounds: synthesized clops, panned by the goat's place on screen ----------
 let AC=null,master=null,soundOn=false;
-function initAudio(){if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.7;master.connect(AC.destination)}catch(e){AC=null}}
+function initAudio(){if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=3;const lim=AC.createDynamicsCompressor();lim.threshold.value=-10;lim.ratio.value=8;lim.attack.value=.003;lim.release.value=.15;master.connect(lim);lim.connect(AC.destination) /* no music now, so the goat and the breeze carry the sound: louder, with a limiter so hoofbeats never clip */}catch(e){AC=null}}
 const HOOFP=[1.12,.86,1.27,.95];
 function clop(pan,vol,soft,leg=0){if(!AC||!soundOn)return;const pv2=HOOFP[leg]*(.75+Math.random()*.5),acc=Math.random()<.2?1.3:1;const t=AC.currentTime+.005,p=AC.createStereoPanner?AC.createStereoPanner():null;
  const out=AC.createGain();out.gain.value=vol;if(p){p.pan.value=Math.max(-1,Math.min(1,pan));out.connect(p);p.connect(master)}else out.connect(master);
