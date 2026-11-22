@@ -84,7 +84,15 @@
   const rockM = M('#4c4852');
   // the invisible clearing the goat can wander: a wide, shallow oval
   const RING = { x: 1.22, z: .2, rx: 8.1, rz: 5.3 };
-  S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
+  // edge markers for the clickable clearing: a stump on its right edge, a little ring of mushrooms on its left
+  { const sx = RING.x + RING.rx, sz = RING.z; S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, sx, groundY(sx, sz) + .25, sz));
+    const capM = M('#b8322a'), dotM = M('#efe6d2'), stemM2 = M('#e6dcc6'), mx = RING.x - RING.rx, mz = RING.z;
+    [[0, 0, 1], [.45, .3, .7], [-.3, .42, .55], [.15, -.42, .6]].forEach(([dx, dz, sc]) => {
+      const x = mx + dx, z = mz + dz, g = groundY(x, z), m = new THREE.Group(); m.position.set(x, g, z); m.scale.setScalar(sc); m.rotation.y = dx * 4;
+      m.add(mk(new THREE.CylinderGeometry(.09, .12, .42, 6), stemM2, 0, .21, 0));
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(.32, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), capM); cap.position.y = .38; cap.scale.y = .75; m.add(cap);
+      [[.15, .1], [-.12, .14], [0, -.17], [.05, .2]].forEach(([a, b]) => m.add(mk(new THREE.IcosahedronGeometry(.045, 0), dotM, a, .58 - Math.hypot(a, b) * .5, b)));
+      S.add(m); }); }
 
   // --- the goat, built exactly as in the intro ---
   const fur = new THREE.MeshLambertMaterial({ color: '#26222a', flatShading: true });
