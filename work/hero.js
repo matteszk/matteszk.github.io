@@ -87,8 +87,8 @@
   S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
 
   // --- the goat: faceted low-poly, after the reference - deep barrel, long neck, slender legs, big grey ears, tan horns, amber eyes ---
-  const coat = new THREE.MeshLambertMaterial({ color: '#2b2830', flatShading: true }), coat2 = new THREE.MeshLambertMaterial({ color: '#36333c', flatShading: true });
-  const earM = coat, earIn = coat2, noseM = M('#3b2e30'), patchM = new THREE.MeshLambertMaterial({ color: '#c3c6d1', flatShading: true });
+  const coat = new THREE.MeshLambertMaterial({ color: '#1f1c23', flatShading: true }), coat2 = new THREE.MeshLambertMaterial({ color: '#29262e', flatShading: true });
+  const earM = coat, earIn = coat2, noseM = M('#241b1e'), patchM = new THREE.MeshLambertMaterial({ color: '#c3c6d1', flatShading: true });
   const hornM = M('#e6e0cf'), hornM2 = M('#d8d1bc'), hornTip = M('#f1ede2'), hoofM = M('#1b191e');
   const eyeM = new THREE.MeshBasicMaterial({ color: '#e0861f' }), lidM = new THREE.MeshBasicMaterial({ color: '#2b2830' });
   const EYES = [];
@@ -115,16 +115,16 @@
   [-1, 1].forEach(sd => {
     // tan horns sweeping up and back, tapering to a point
     let hp = new THREE.Vector3(.13 * sd, .3, .04), ang = 1.3;
-    for (let i = 0; i < 6; i++) {
-      const r0 = .075 * (1 - i * .15), r1 = .075 * (1 - (i + 1) * .15) + .004, len = .24, dir = new THREE.Vector3(.12 * sd, Math.sin(ang), -Math.cos(ang)).normalize();
-      const seg = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, len, 5), i == 5 ? hornTip : (i % 2 ? hornM2 : hornM));
+    for (let i = 0; i < 5; i++) {
+      const r0 = .105 * (1 - i * .19), r1 = .105 * (1 - (i + 1) * .19) + .006, len = .19, dir = new THREE.Vector3(.12 * sd, Math.sin(ang), -Math.cos(ang)).normalize();
+      const seg = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, len, 5), i == 4 ? hornTip : (i % 2 ? hornM2 : hornM));
       seg.position.copy(hp).addScaledVector(dir, len / 2); seg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir); head.add(seg);
       hp.addScaledVector(dir, len * .95); ang -= .32;
     }
     // pale eye patch with an amber iris (the iris is what blinks)
     const e = new THREE.Mesh(new THREE.BoxGeometry(.02, .055, .11), eyeM); e.position.set(.315 * sd, .1, .24); e.rotation.y = -.25 * sd; head.add(e); EYES.push(e);
     // big grey ears that stick out sideways
-    const eg = new THREE.ConeGeometry(.17, .46, 4); eg.translate(0, .26, 0); eg.rotateZ(-Math.PI / 2 * sd); eg.scale(1, 1, .38);
+    const eg = new THREE.ConeGeometry(.12, .3, 4); eg.translate(0, .26, 0); eg.rotateZ(-Math.PI / 2 * sd); eg.scale(1, 1, .38);
     const ear = new THREE.Mesh(eg, earM); ear.position.set(.27 * sd, .18, -.1); ear.rotation.z = -.35 * sd; head.add(ear);
     const ein = new THREE.Mesh(eg, earIn); ein.scale.set(.8, .7, .5); ein.position.set(0, 0, .02); ear.add(ein); EARS.push({ ear, sd });
   });
@@ -134,7 +134,13 @@
     const up = cyl(.16, .12, .78, front ? coat2 : coat, 6); up.position.y = -.37; hip.add(up);
     const knee = new THREE.Group(); knee.position.y = -.74; hip.add(knee);
     const lo = cyl(.11, .09, .7, coat, 6); lo.position.y = -.35; knee.add(lo);
-    const hf = cyl(.09, .13, .13, hoofM, 6); hf.position.set(0, -.73, .02); knee.add(hf); return { hip, knee }; }
+    // muscle: a rounded thigh on the hind legs, a shoulder on the front, so the legs swell where they join the body
+    const mus = front ? facet(.19, .32, .24, coat2, 31) : facet(.22, .4, .3, coat, 37); mus.position.set(0, front ? -.12 : -.16, front ? .02 : -.04); hip.add(mus);
+    // cloven hoof: a short pastern and two wedge toes splayed a touch
+    const pas = cyl(.085, .1, .1, coat, 6); pas.position.y = -.68; knee.add(pas);
+    [-1, 1].forEach(sd => { const tg = new THREE.CylinderGeometry(.04, .065, .13, 4); tg.rotateY(Math.PI / 4); tg.scale(1, 1, 1.5);
+      const toe = new THREE.Mesh(tg, hoofM); toe.position.set(.045 * sd, -.765, .035); toe.rotation.set(.12, 0, -.06 * sd); knee.add(toe); });
+    return { hip, knee }; }
   // diagonal pairs step together: front-left with back-right, front-right with back-left
   const LEGS = [[leg(.27, .7, 1), 0], [leg(-.27, .7, 1), Math.PI], [leg(.25, -.72), Math.PI], [leg(-.25, -.72), 0]];
   // stand the goat on his hooves: measure how far the hooves reach below the rig and lift by that much
