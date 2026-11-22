@@ -36,17 +36,27 @@
   };
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
-  // ground: a gently rolling clearing, darker toward the edges
+  // ground: same treatment as the intro - per-face meadow colours with dirt patches, under a soft mottled grass texture
   const gg = new THREE.PlaneGeometry(80, 60, 40, 30); gg.rotateX(-Math.PI / 2);
-  const gp = gg.attributes.position, cols = [];
-  for (let i = 0; i < gp.count; i++) {
-    const x = gp.getX(i), z = gp.getZ(i), d = Math.hypot(x, z);
-    gp.setY(i, Math.sin(x * .3) * .12 + Math.cos(z * .25) * .12 + Math.max(0, d - 10) * .04);
-    const k = Math.max(.45, 1 - d / 30), j = .9 + rnd() * .2;
-    cols.push(.17 * k * j, .22 * k * j, .13 * k * j);
+  { const gp0 = gg.attributes.position;
+    for (let i = 0; i < gp0.count; i++) { const x = gp0.getX(i), z = gp0.getZ(i), d = Math.hypot(x, z); gp0.setY(i, Math.sin(x * .3) * .12 + Math.cos(z * .25) * .12 + Math.max(0, d - 10) * .04); } }
+  gg.computeVertexNormals();
+  const gn = gg.toNonIndexed(), gp = gn.attributes.position, cols = [];
+  for (let i = 0; i < gp.count; i += 3) {
+    const cx = (gp.getX(i) + gp.getX(i + 1) + gp.getX(i + 2)) / 3, cz = (gp.getZ(i) + gp.getZ(i + 1) + gp.getZ(i + 2)) / 3, r = rnd() * .05;
+    const dn = Math.sin(cx * .45 + 1.3) * Math.cos(cz * .6) + Math.sin(cx * 1.2 + cz * .9) * .45, dd = Math.min(1, Math.max(0, (dn - .75) * 3));
+    const bl = Math.sin(cx * .9 + .7) * Math.cos(cz * 1.1 + 1.9) + Math.sin(cx * 2.1 - cz * 1.7) * .6, bk = 1 + bl * .09, yl = Math.max(0, bl) * .04;
+    const fade = Math.max(.5, 1 - Math.hypot(cx, cz) / 32), t = .4;
+    for (let k = 0; k < 3; k++) cols.push((((.3 + t * .09 + r) * (1 - dd) + (.42 + r) * dd) * bk + yl) * fade, (((.34 + t * .09 + r) * (1 - dd) + (.33 + r) * dd) * bk + yl * .6) * fade, (((.21 + t * .04 + r * .6) * (1 - dd) + (.22 + r * .5) * dd) * bk) * fade);
   }
-  gg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3)); gg.computeVertexNormals();
-  S.add(new THREE.Mesh(gg, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
+  gn.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  const grassT = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+    x.fillStyle = '#b9bba8'; x.fillRect(0, 0, 64, 64);
+    for (let i = 0; i < 34; i++) { const px = rnd() * 64, py = rnd() * 64, rr = 4 + rnd() * 12, v = rnd(), rot = rnd() * 3, sq = .55 + rnd() * .5,
+      col = v < .55 ? `rgba(${132 + v * 50 | 0},${142 + v * 40 | 0},${104 + v * 24 | 0},.45)` : `rgba(${206 + v * 25 | 0},${210 + v * 20 | 0},${184 + v * 16 | 0},.35)`;
+      for (const ox of [-64, 0, 64]) for (const oy of [-64, 0, 64]) { const gr = x.createRadialGradient(px + ox, py + oy, 0, px + ox, py + oy, rr); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.beginPath(); x.ellipse(px + ox, py + oy, rr, rr * sq, rot, 0, 7); x.fill(); } }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(14, 10); t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = R.capabilities.getMaxAnisotropy(); return t; })();
+  S.add(new THREE.Mesh(gn, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassT })));
 
   // forest: rings of trees around the clearing, thicker behind the goat
   for (let i = 0; i < 70; i++) {
@@ -59,13 +69,8 @@
   }
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
-  // a fairy ring of small stones marks the clearing the goat can wander
-  const RING = { x: 1.2, z: .2, rx: 6.4, rz: 3.4 }; // a wide oval: broad across, shallow front to back
-  for (let i = 0; i < 24; i++) {
-    const a = i / 24 * Math.PI * 2 + rnd() * .12, sc = .13 + rnd() * .1, out = .35 + rnd() * .2;
-    const st = mk(new THREE.DodecahedronGeometry(1, 0), rockM, RING.x + Math.cos(a) * (RING.rx + out), sc * .5, RING.z + Math.sin(a) * (RING.rz + out), sc, sc * .7, sc);
-    st.rotation.y = rnd() * 6; S.add(st);
-  }
+  // the invisible clearing the goat can wander: a wide, shallow oval
+  const RING = { x: 2.2, z: .2, rx: 5.2, rz: 3.4 };
   S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
 
   // --- the goat, built exactly as in the intro ---
@@ -110,7 +115,7 @@
   // diagonal pairs step together: front-left with back-right, front-right with back-left
   const LEGS = [[leg(.3, .7), 0], [leg(-.3, .7), Math.PI], [leg(.3, -.75), Math.PI], [leg(-.3, -.75), 0]];
   rig.position.y = -.13;
-  const HOME = new THREE.Vector3(RING.x, 0, -1.3);
+  const HOME = new THREE.Vector3(1.2, 0, -1.3);
   goat.position.copy(HOME); goat.rotation.y = -.75; S.add(goat);
 
   // fur + grain textures, as in the intro
@@ -162,10 +167,20 @@
   const stemM = M('#4a3020'), leafM = M('#5c8a32');
   const FLESH = new THREE.Color('#f3e3b0');
   // three varieties: [skin, blush, height, width]
-  const KINDS = [['#d42a2a', '#e8453a', .92, 1], ['#a8181e', '#c8302e', 1.08, .94], ['#8fb83a', '#c9c24a', .95, 1.02]];
+  // apple-shaped: broad shoulders, tapered base, a dimple top and bottom, faint lobes
+  function appleGeo(r, detail) {
+    const g = new THREE.IcosahedronGeometry(r, detail), P = g.attributes.position, v = new THREE.Vector3();
+    for (let i = 0; i < P.count; i++) { v.fromBufferAttribute(P, i).divideScalar(r);
+      const y = v.y, h = Math.hypot(v.x, v.z), th = Math.atan2(v.z, v.x);
+      let w = 1 + .06 * Math.max(0, y) - .24 * Math.max(0, -y) ** 1.6; w *= 1 + .035 * Math.cos(5 * th) * Math.max(0, -y);
+      let ny = y * .97 - .26 * Math.exp(-h * h * 9) * Math.sign(y) * (y > 0 ? 1 : .55);
+      P.setXYZ(i, v.x * w * r, ny * r, v.z * w * r); }
+    g.computeVertexNormals(); return g;
+  }
+  const KINDS = [['#d42a2a', '#e8453a', .92, 1], ['#9e1620', '#c8302e', 1.04, .95], ['#c0301e', '#e8763a', .95, 1.02]];
   function appleStages([skin, blush, sy, sxz], seed) {
     let rs = seed; const r = () => (rs = (rs * 16807) % 2147483647) / 2147483647;
-    const base = new THREE.IcosahedronGeometry(.28, 3); const g0 = base.index ? base.toNonIndexed() : base;
+    const base = appleGeo(.28, 3); const g0 = base.index ? base.toNonIndexed() : base;
     const P = g0.attributes.position, n = P.count, cSkin = new THREE.Color(skin), cBlush = new THREE.Color(blush);
     const pos = [], col = [];
     for (let i = 0; i < n; i++) { pos.push(new THREE.Vector3(P.getX(i) * sxz, P.getY(i) * sy, P.getZ(i) * sxz)); col.push(cSkin.clone().lerp(cBlush, Math.max(0, P.getX(i) / .28) * .6)); }
@@ -187,8 +202,8 @@
   const apple = new THREE.Group();
   const appleMesh = new THREE.Mesh(STAGES[0][0], new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, map: roughT }));
   apple.add(appleMesh);
-  apple.add(mk(new THREE.CylinderGeometry(.025, .03, .16, 4), stemM, 0, .3, 0));
-  { const lf = mk(new THREE.BoxGeometry(.16, .02, .08), leafM, .08, .32, 0); lf.rotation.z = -.5; apple.add(lf); }
+  apple.add(mk(new THREE.CylinderGeometry(.025, .03, .16, 4), stemM, 0, .22, 0));
+  { const lf = mk(new THREE.BoxGeometry(.16, .02, .08), leafM, .08, .26, 0); lf.rotation.z = -.5; apple.add(lf); }
   let kind = 0, stage = 0;
   apple.visible = false; S.add(apple);
   const APPLE_R = .26, SPAWN_Y = 1.05; // spawns at about half the goat's body height
@@ -250,6 +265,7 @@
         if (Math.abs(fYaw) < .12 && appleState === 'rest') { state = 'eat'; stateT = 0; }
       }
     } else if (state === 'eat') {
+      if (navPtr !== null) stateT -= dt; // pause the meal while he looks up at the nav
       // a few bites: the apple shrinks with each one, then it's gone
       const want = Math.min(4, Math.max(0, Math.floor((stateT - .55) / .6) + 1));
       if (stateT > .55 && want !== stage) { stage = want; appleMesh.geometry = STAGES[kind][stage]; chomp = 1; }
@@ -261,8 +277,9 @@
     rig.position.y = -.13 + Math.abs(Math.sin(walkPh)) * .04 * moving;
 
     // head: down only while eating; up and glancing around otherwise
-    const looking = navPtr !== null && state === 'idle';
-    down = lerp(down, state === 'eat' ? 1 : 0, Math.min(1, dt * (state === 'eat' ? 3 : 4)));
+    const looking = navPtr !== null && (state === 'idle' || state === 'eat');
+    const eating = state === 'eat' && !looking;
+    down = lerp(down, eating ? 1 : 0, Math.min(1, dt * (eating ? 3 : 4)));
     const e = sstep(Math.max(0, Math.min(1, down)));
     if (state === 'idle' && !looking && t > nextGlance) { glanceTo = (Math.random() - .5) * 1.1; nextGlance = t + 2.5 + Math.random() * 4; }
     if (state !== 'idle') glanceTo = 0;
@@ -291,7 +308,7 @@
     return ray.ray.intersectPlane(floor, hit) && inRing(hit.x, hit.z, 0) ? hit : null;
   }
   wrap.addEventListener('click', e => {
-    if (reduce || state === 'eat') return;
+    if (reduce || appleState !== 'none') return; // one apple at a time
     const g = groundAt(e); if (!g) return;
     // keep the apple a little inside the stones
     const dx = g.x - RING.x, dz = g.z - RING.z, ov = Math.hypot(dx / (RING.rx - .7), dz / (RING.rz - .7));
@@ -301,7 +318,7 @@
   // pointer cursor over ground inside the ring
   wrap.addEventListener('pointermove', e => {
     if (reduce || e.pointerType !== 'mouse') return;
-    wrap.style.cursor = groundAt(e) && state !== 'eat' ? 'pointer' : '';
+    wrap.style.cursor = groundAt(e) && appleState === 'none' ? 'pointer' : '';
   });
 
   // --- camera: a very slow, small drift so the scene feels alive ---
