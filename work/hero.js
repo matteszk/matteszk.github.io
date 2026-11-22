@@ -104,8 +104,8 @@
   const chest = facet(.64, .68, .6, coat2, 11); chest.position.set(0, .06, .52); body.add(chest);
   const hips = facet(.6, .6, .54, coat, 13); hips.position.set(0, .04, -.62); body.add(hips);
   const neck = new THREE.Group(); neck.position.set(0, .38, .88); body.add(neck);
-  const nk = cyl(.3, .45, .82, coat2, 6); nk.position.set(0, .36, .06); nk.rotation.x = .55; neck.add(nk);
-  const head = new THREE.Group(); head.position.set(0, .82, .3); neck.add(head);
+  const nk = cyl(.34, .5, .66, coat2, 6); nk.position.set(0, .24, .2); nk.rotation.x = .85; neck.add(nk); // short, thick neck that slopes forward
+  const head = new THREE.Group(); head.position.set(0, .5, .5); neck.add(head);
   const sk = facet(.33, .33, .4, coat, 17); sk.position.set(0, .04, .1); head.add(sk);
   const muz = cyl(.15, .25, .6, coat2, 6); muz.rotation.x = Math.PI / 2 + .4; muz.position.set(0, -.14, .5); head.add(muz);
   const nose = facet(.15, .12, .1, noseM, 19, 0); nose.position.set(0, -.27, .78); nose.scale.set(1.2, 1.2, 1.2); head.add(nose);
