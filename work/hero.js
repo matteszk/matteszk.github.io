@@ -59,7 +59,13 @@
   }
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
-  [[-3.4, -1.5, .5], [7.4, -3.4, .7], [-1.6, 2.6, .3]].forEach(([x, z, s]) => S.add(mk(new THREE.DodecahedronGeometry(1, 0), rockM, x, s * .4, z, s, s * .7, s)));
+  // a fairy ring of small stones marks the clearing the goat can wander
+  const RING = { x: 1.2, z: -1.3, r: 3.8 };
+  for (let i = 0; i < 14; i++) {
+    const a = i / 14 * Math.PI * 2 + rnd() * .2, rr = RING.r + .35 + rnd() * .2, sc = .13 + rnd() * .1;
+    const st = mk(new THREE.DodecahedronGeometry(1, 0), rockM, RING.x + Math.cos(a) * rr, sc * .5, RING.z + Math.sin(a) * rr, sc, sc * .7, sc);
+    st.rotation.y = rnd() * 6; S.add(st);
+  }
   S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, 7.6, .25, 2.4));
 
   // --- the goat, built exactly as in the intro ---
@@ -104,7 +110,7 @@
   // diagonal pairs step together: front-left with back-right, front-right with back-left
   const LEGS = [[leg(.3, .7), 0], [leg(-.3, .7), Math.PI], [leg(.3, -.75), Math.PI], [leg(-.3, -.75), 0]];
   rig.position.y = -.13;
-  const HOME = new THREE.Vector3(2.6, 0, -.6);
+  const HOME = new THREE.Vector3(RING.x, 0, RING.z);
   goat.position.copy(HOME); goat.rotation.y = -.75; S.add(goat);
 
   // fur + grain textures, as in the intro
@@ -134,15 +140,15 @@
   { const f = fc.getContext('2d'), gr = f.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,240,170,1)'); gr.addColorStop(.18, 'rgba(240,200,80,.9)'); gr.addColorStop(.5, 'rgba(231,184,74,.25)'); gr.addColorStop(1, 'rgba(231,184,74,0)'); f.fillStyle = gr; f.fillRect(0, 0, 64, 64); }
   const fTex = new THREE.CanvasTexture(fc);
   const FLIES = [];
-  for (let i = 0; i < 22; i++) {
+  for (let i = 0; i < 11; i++) {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: fTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
     const home = new THREE.Vector3((rnd() - .5) * 12, .6 + rnd() * 3.2, (rnd() - .6) * 8);
     sp.scale.setScalar(.32 + rnd() * .2); S.add(sp);
     FLIES.push({ sp, home, a: rnd() * 100, b: rnd() * 100, sp1: .25 + rnd() * .35, ph: rnd() * 6.28, rate: .6 + rnd() * 1.1 });
   }
 
-  // --- behavior: graze by default; look up at the pointer while it's in the header nav;
-  //     walk to a spot on the ground when it's clicked near his home spot ---
+  // --- behavior: idle by default; look up at the pointer while it's in the header nav;
+  //     click the ground inside the ring and an apple pops in, drops, and he walks over to eat it ---
   const nav = document.querySelector('header.top');
   let navPtr = null; // pointer x across the window (-1..1) while it's in the header
   if (nav) {
@@ -151,68 +157,122 @@
     nav.addEventListener('focusin', () => { if (navPtr === null) navPtr = 0; });
     nav.addEventListener('focusout', () => { navPtr = null; });
   }
-  // the clearing he can wander: not back into the treeline, not off the sides
-  const PEN = { x0: -4.5, x1: 6.2, z0: -2.2, z1: 3 };
-  const WALK_RADIUS = 4.5, walkTo = new THREE.Vector3(); let walking = false, walkPh = 0;
-  let nextBlink = 2, blinkT = -1, down = 1, yaw = 0, lift = 0;
+
+  // the apple: low-poly, in the intro's orchard colors
+  const appleM = M('#d42a2a'), stemM = M('#4a3020'), leafM = M('#5c8a32');
+  const apple = new THREE.Group();
+  apple.add(mk(new THREE.IcosahedronGeometry(.28, 1), appleM, 0, 0, 0, 1, .92, 1));
+  apple.add(mk(new THREE.CylinderGeometry(.025, .03, .16, 4), stemM, 0, .3, 0));
+  { const lf = mk(new THREE.BoxGeometry(.16, .02, .08), leafM, .08, .32, 0); lf.rotation.z = -.5; apple.add(lf); }
+  apple.visible = false; S.add(apple);
+  const APPLE_R = .26, SPAWN_Y = 1.05; // spawns at about half the goat's body height
+  let appleState = 'none', appleT = 0, appleVy = 0, bounces = 0, appleSize = 1;
+
+  let state = 'idle', stateT = 0, walkPh = 0;
+  const walkTo = new THREE.Vector3();
+  let nextBlink = 2, blinkT = -1, down = 0, yaw = 0, lift = 0, glance = 0, glanceTo = 0, nextGlance = 3;
   const lerp = (a, b, k) => a + (b - a) * k, sstep = x => x * x * (3 - 2 * x);
+  const inRing = (x, z, pad) => Math.hypot(x - RING.x, z - RING.z) <= RING.r - pad;
+
+  function dropApple(x, z) {
+    apple.position.set(x, SPAWN_Y, z); apple.rotation.y = Math.random() * 6;
+    apple.scale.setScalar(.01); apple.visible = true; appleSize = 1;
+    appleState = 'pop'; appleT = 0; appleVy = 0; bounces = 0;
+    // walk to a spot where his mouth is over the apple
+    const dx = x - goat.position.x, dz = z - goat.position.z, d = Math.hypot(dx, dz) || 1;
+    const reach = 1.45;
+    if (d > reach + .1) { walkTo.set(x - dx / d * reach, 0, z - dz / d * reach); state = 'walk'; }
+    else { walkTo.copy(goat.position); state = 'turn'; }
+  }
+
+  function updateApple(dt) {
+    if (appleState === 'none') return;
+    appleT += dt;
+    if (appleState === 'pop') { // grow in with a little overshoot
+      const k = Math.min(1, appleT / .28); apple.scale.setScalar(appleSize * (k < 1 ? 1 + Math.sin(k * Math.PI) * .25 : 1) * k + .01);
+      if (k >= 1) { appleState = 'fall'; apple.scale.setScalar(appleSize); }
+    } else if (appleState === 'fall') { // drop, then a couple of soft bounces
+      appleVy -= 9 * dt; apple.position.y += appleVy * dt; apple.rotation.x += dt * 1.5;
+      if (apple.position.y <= APPLE_R) {
+        apple.position.y = APPLE_R;
+        if (bounces < 2 && Math.abs(appleVy) > .8) { appleVy = -appleVy * .32; bounces++; } else { appleVy = 0; appleState = 'rest'; }
+      }
+    }
+  }
+
   function idle(t, dt) {
+    stateT += dt;
     chest.scale.y = 1 + Math.sin(t * 1.7) * .02; hips.scale.y = 1 + Math.sin(t * 1.7 - .4) * .015;
     if (t > nextBlink) { blinkT = t; nextBlink = t + 2.5 + Math.random() * 4; }
     const closed = blinkT > 0 && t - blinkT < .14; EYES.forEach(e => { e.material = closed ? lidM : eyeM; e.scale.y = closed ? .25 : 1; });
+    updateApple(dt);
 
-    // walking: turn toward the spot, then step over to it
-    if (walking) {
-      const dx = walkTo.x - goat.position.x, dz = walkTo.z - goat.position.z, dist = Math.hypot(dx, dz);
-      const want = Math.atan2(dx, dz); let dYaw = want - goat.rotation.y;
-      dYaw = Math.atan2(Math.sin(dYaw), Math.cos(dYaw));
+    let moving = 0;
+    if (state === 'walk' || state === 'turn') {
+      const tx = state === 'walk' ? walkTo.x : apple.position.x, tz = state === 'walk' ? walkTo.z : apple.position.z;
+      const dx = tx - goat.position.x, dz = tz - goat.position.z, dist = Math.hypot(dx, dz);
+      let dYaw = Math.atan2(dx, dz) - goat.rotation.y; dYaw = Math.atan2(Math.sin(dYaw), Math.cos(dYaw));
       goat.rotation.y += dYaw * Math.min(1, dt * 4);
-      if (Math.abs(dYaw) < .6) { const step = Math.min(dist, dt * 1.6); goat.position.x += dx / dist * step; goat.position.z += dz / dist * step; }
-      walkPh += dt * 7;
-      if (dist < .05) walking = false;
+      if (state === 'walk') {
+        if (Math.abs(dYaw) < .6 && dist > .02) { const step = Math.min(dist, dt * 1.6); goat.position.x += dx / dist * step; goat.position.z += dz / dist * step; moving = 1; }
+        if (dist < .05) { state = 'turn'; stateT = 0; }
+      } else {
+        // face the apple, and wait for it to land before eating
+        let fYaw = Math.atan2(apple.position.x - goat.position.x, apple.position.z - goat.position.z) - goat.rotation.y;
+        fYaw = Math.atan2(Math.sin(fYaw), Math.cos(fYaw));
+        if (Math.abs(fYaw) < .12 && appleState === 'rest') { state = 'eat'; stateT = 0; }
+      }
+    } else if (state === 'eat') {
+      // a few bites: the apple shrinks with each one, then it's gone
+      if (stateT > .7) { appleSize = Math.max(0, 1 - (stateT - .7) / 2.2); apple.scale.setScalar(Math.max(.01, appleSize * (1 - (Math.sin(stateT * 9) > .6 ? .06 : 0)))); }
+      if (stateT > 2.9) { apple.visible = false; appleState = 'none'; state = 'idle'; stateT = 0; }
     }
-    const moving = walking ? 1 : 0;
-    LEGS.forEach(([l, off]) => { const s = Math.sin(walkPh + off) * moving;
-      l.hip.rotation.x = lerp(l.hip.rotation.x, s * .4, Math.min(1, dt * 10)); l.knee.rotation.x = lerp(l.knee.rotation.x, Math.max(0, -s) * .5, Math.min(1, dt * 10)); });
+    if (moving) walkPh += dt * 7;
+    LEGS.forEach(([l, off]) => { const sw = Math.sin(walkPh + off) * moving;
+      l.hip.rotation.x = lerp(l.hip.rotation.x, sw * .4, Math.min(1, dt * 10)); l.knee.rotation.x = lerp(l.knee.rotation.x, Math.max(0, -sw) * .5, Math.min(1, dt * 10)); });
     rig.position.y = -.13 + Math.abs(Math.sin(walkPh)) * .04 * moving;
 
-    // head: down to graze unless walking or someone's in the nav
-    const looking = navPtr !== null && !walking;
-    down = lerp(down, walking || looking ? 0 : 1, Math.min(1, dt * (looking ? 5 : 2)));
+    // head: down only while eating; up and glancing around otherwise
+    const looking = navPtr !== null && state === 'idle';
+    down = lerp(down, state === 'eat' ? 1 : 0, Math.min(1, dt * (state === 'eat' ? 3 : 4)));
     const e = sstep(Math.max(0, Math.min(1, down)));
-    // when looking, turn the head toward the pointer's side of the screen
-    let wantYaw = 0;
+    if (state === 'idle' && !looking && t > nextGlance) { glanceTo = (Math.random() - .5) * 1.1; nextGlance = t + 2.5 + Math.random() * 4; }
+    if (state !== 'idle') glanceTo = 0;
+    glance = lerp(glance, glanceTo, Math.min(1, dt * 2.2));
+    let wantYaw = glance;
     if (looking) { wantYaw = navPtr * .7 - goat.rotation.y; wantYaw = Math.max(-1.1, Math.min(1.1, Math.atan2(Math.sin(wantYaw), Math.cos(wantYaw)))); }
-    yaw = lerp(yaw, wantYaw, Math.min(1, dt * 6));
+    yaw = lerp(yaw, wantYaw * (1 - e), Math.min(1, dt * 6));
     lift = lerp(lift, looking ? 1 : 0, Math.min(1, dt * 5));
     neck.rotation.x = -.08 - lift * .25 + e * 1.3;
     head.rotation.x = e * (.6 + Math.sin(t * 6.6) * .05) - lift * .15;
     head.rotation.y = yaw;
     body.rotation.x = e * .08;
     EARS.forEach(({ ear, sd }) => { ear.rotation.z = -.35 * sd + Math.max(0, Math.sin(t * 3 + sd * 2) - .94) * 6 * sd + lift * .25 * sd; });
-    tail.rotation.x = -.5 + Math.sin(t * (walking ? 5 : 2.4)) * .25;
+    tail.rotation.x = -.5 + Math.sin(t * (moving ? 5 : 2.4)) * .25;
     beard.rotation.x = Math.sin(t * 1.3) * .05;
     placeBlob();
   }
 
-  // click the ground near his spot and he walks over
+  // click the ground inside the ring: an apple pops in there
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
-  wrap.addEventListener('click', e => {
-    if (reduce) return;
+  function groundAt(e) {
     const r = wrap.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, cam);
-    if (!ray.ray.intersectPlane(floor, hit)) return;
-    if (hit.distanceTo(HOME) > WALK_RADIUS) return;
-    walkTo.set(Math.max(PEN.x0, Math.min(PEN.x1, hit.x)), 0, Math.max(PEN.z0, Math.min(PEN.z1, hit.z))); walking = true;
+    return ray.ray.intersectPlane(floor, hit) && inRing(hit.x, hit.z, 0) ? hit : null;
+  }
+  wrap.addEventListener('click', e => {
+    if (reduce || state === 'eat') return;
+    const g = groundAt(e); if (!g) return;
+    // keep the apple a little inside the stones
+    const dx = g.x - RING.x, dz = g.z - RING.z, d = Math.hypot(dx, dz), max = RING.r - .5;
+    const k = d > max ? max / d : 1;
+    dropApple(RING.x + dx * k, RING.z + dz * k);
   });
-  // show a pointer cursor over ground he can walk to
+  // pointer cursor over ground inside the ring
   wrap.addEventListener('pointermove', e => {
     if (reduce || e.pointerType !== 'mouse') return;
-    const r = wrap.getBoundingClientRect();
-    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(ndc, cam);
-    wrap.style.cursor = ray.ray.intersectPlane(floor, hit) && hit.distanceTo(HOME) <= WALK_RADIUS ? 'pointer' : '';
+    wrap.style.cursor = groundAt(e) && state !== 'eat' ? 'pointer' : '';
   });
 
   // --- camera: a very slow, small drift so the scene feels alive ---
