@@ -88,8 +88,8 @@
 
   // --- the goat: faceted low-poly, after the reference - deep barrel, long neck, slender legs, big grey ears, tan horns, amber eyes ---
   const coat = new THREE.MeshLambertMaterial({ color: '#2b2830', flatShading: true }), coat2 = new THREE.MeshLambertMaterial({ color: '#36333c', flatShading: true });
-  const earM = M('#7a7f8c'), earIn = M('#a3a8b5'), noseM = M('#5a2c28'), patchM = new THREE.MeshLambertMaterial({ color: '#c3c6d1', flatShading: true });
-  const hornM = M('#d29a4c'), hornM2 = M('#c58a3e'), hornTip = M('#e2b06a'), hoofM = M('#1b191e');
+  const earM = coat, earIn = coat2, noseM = M('#3b2e30'), patchM = new THREE.MeshLambertMaterial({ color: '#c3c6d1', flatShading: true });
+  const hornM = M('#e6e0cf'), hornM2 = M('#d8d1bc'), hornTip = M('#f1ede2'), hoofM = M('#1b191e');
   const eyeM = new THREE.MeshBasicMaterial({ color: '#e0861f' }), lidM = new THREE.MeshBasicMaterial({ color: '#2b2830' });
   const EYES = [];
   // a faceted blob: an icosahedron with its corners nudged, so light breaks into flat planes like the reference
@@ -100,17 +100,17 @@
   const cyl = (r0, r1, h, m, seg = 6) => new THREE.Mesh(new THREE.CylinderGeometry(r0, r1, h, seg), m);
   const goat = new THREE.Group(), rig = new THREE.Group(); goat.add(rig);
   const body = new THREE.Group(); body.position.y = 1.62; rig.add(body);
-  const barrel = facet(.56, .6, 1.08, coat, 7); barrel.position.set(0, -.02, -.02); body.add(barrel);
-  const chest = facet(.58, .68, .6, coat2, 11); chest.position.set(0, .06, .52); body.add(chest);
-  const hips = facet(.52, .6, .52, coat, 13); hips.position.set(0, .04, -.62); body.add(hips);
+  const barrel = facet(.62, .62, 1.06, coat, 7); barrel.position.set(0, -.02, -.02); body.add(barrel);
+  const chest = facet(.64, .68, .6, coat2, 11); chest.position.set(0, .06, .52); body.add(chest);
+  const hips = facet(.6, .6, .54, coat, 13); hips.position.set(0, .04, -.62); body.add(hips);
   const neck = new THREE.Group(); neck.position.set(0, .38, .88); body.add(neck);
-  const nk = cyl(.27, .42, .9, coat2, 7); nk.position.set(0, .36, .06); nk.rotation.x = .55; neck.add(nk);
+  const nk = cyl(.3, .45, .82, coat2, 6); nk.position.set(0, .36, .06); nk.rotation.x = .55; neck.add(nk);
   const head = new THREE.Group(); head.position.set(0, .82, .3); neck.add(head);
   const sk = facet(.33, .33, .4, coat, 17); sk.position.set(0, .04, .1); head.add(sk);
   const muz = cyl(.15, .25, .6, coat2, 6); muz.rotation.x = Math.PI / 2 + .4; muz.position.set(0, -.14, .5); head.add(muz);
   const nose = facet(.15, .12, .1, noseM, 19, 0); nose.position.set(0, -.27, .78); nose.scale.set(1.2, 1.2, 1.2); head.add(nose);
-  const beard = new THREE.Group(); beard.position.set(0, -.36, .5); head.add(beard);
-  { const b1 = cyl(.09, .015, .5, coat, 4); b1.position.y = -.22; b1.rotation.x = -.25; beard.add(b1); }
+  const beard = new THREE.Group(); beard.position.set(0, -.3, .46); head.add(beard);
+  { const b1 = cyl(.09, .015, .3, coat, 4); b1.position.y = -.1; b1.rotation.x = -.2; beard.add(b1); }
   const EARS = [];
   [-1, 1].forEach(sd => {
     // tan horns sweeping up and back, tapering to a point
@@ -122,8 +122,7 @@
       hp.addScaledVector(dir, len * .95); ang -= .32;
     }
     // pale eye patch with an amber iris (the iris is what blinks)
-    const pt = facet(.035, .085, .09, patchM, 23 + sd, 0); pt.position.set(.31 * sd, .1, .24); head.add(pt);
-    const e = facet(.03, .045, .045, eyeM, 29, 0); e.position.set(.34 * sd, .1, .25); head.add(e); EYES.push(e);
+    const e = new THREE.Mesh(new THREE.BoxGeometry(.02, .055, .11), eyeM); e.position.set(.315 * sd, .1, .24); e.rotation.y = -.25 * sd; head.add(e); EYES.push(e);
     // big grey ears that stick out sideways
     const eg = new THREE.ConeGeometry(.17, .46, 4); eg.translate(0, .26, 0); eg.rotateZ(-Math.PI / 2 * sd); eg.scale(1, 1, .38);
     const ear = new THREE.Mesh(eg, earM); ear.position.set(.27 * sd, .18, -.1); ear.rotation.z = -.35 * sd; head.add(ear);
@@ -132,10 +131,10 @@
   const tail = new THREE.Group(); tail.position.set(0, .42, -1.05); body.add(tail); const tl = cyl(.07, .02, .35, coat, 4); tl.position.y = .16; tail.add(tl);
   // slender legs with the same hip and knee pivots as before, so every animation still fits
   function leg(x, z, front) { const hip = new THREE.Group(); hip.position.set(x, -.3, z); body.add(hip);
-    const up = cyl(.1, .075, .78, front ? coat2 : coat, 5); up.position.y = -.37; hip.add(up);
+    const up = cyl(.16, .12, .78, front ? coat2 : coat, 6); up.position.y = -.37; hip.add(up);
     const knee = new THREE.Group(); knee.position.y = -.74; hip.add(knee);
-    const lo = cyl(.065, .055, .7, coat, 5); lo.position.y = -.35; knee.add(lo);
-    const hf = cyl(.05, .085, .12, hoofM, 5); hf.position.set(0, -.73, .02); knee.add(hf); return { hip, knee }; }
+    const lo = cyl(.11, .09, .7, coat, 6); lo.position.y = -.35; knee.add(lo);
+    const hf = cyl(.09, .13, .13, hoofM, 6); hf.position.set(0, -.73, .02); knee.add(hf); return { hip, knee }; }
   // diagonal pairs step together: front-left with back-right, front-right with back-left
   const LEGS = [[leg(.27, .7, 1), 0], [leg(-.27, .7, 1), Math.PI], [leg(.25, -.72), Math.PI], [leg(-.25, -.72), 0]];
   // stand the goat on his hooves: measure how far the hooves reach below the rig and lift by that much
