@@ -242,14 +242,15 @@
   function updateApple(dt) {
     if (appleState === 'none') return;
     appleT += dt;
-    if (appleState === 'pop') { // grow in with a little overshoot
-      const k = Math.min(1, appleT / .28); apple.scale.setScalar(appleSize * (k < 1 ? 1 + Math.sin(k * Math.PI) * .25 : 1) * k + .01);
-      if (k >= 1) { appleState = 'fall'; apple.scale.setScalar(appleSize); }
+    if (appleState === 'pop') { // quick pop with an easeOutBack overshoot, a beat of hang time, then drop
+      const k = Math.min(1, appleT / .18), c1 = 2.4, c3 = c1 + 1, eb = 1 + c3 * (k - 1) ** 3 + c1 * (k - 1) ** 2;
+      apple.scale.setScalar(Math.max(.01, appleSize * eb));
+      if (appleT >= .24) { appleState = 'fall'; apple.scale.setScalar(appleSize); }
     } else if (appleState === 'fall') { // drop, then a couple of soft bounces
-      appleVy -= 9 * dt; apple.position.y += appleVy * dt; apple.rotation.x += dt * 1.5;
+      appleVy -= 24 * dt; apple.position.y += appleVy * dt; apple.rotation.x += dt * 1.5;
       if (apple.position.y <= APPLE_R) {
         apple.position.y = APPLE_R;
-        if (bounces < 2 && Math.abs(appleVy) > .8) { appleVy = -appleVy * .32; bounces++; } else { appleVy = 0; appleState = 'rest'; }
+        if (bounces < 2 && Math.abs(appleVy) > 1.2) { appleVy = -appleVy * .28; bounces++; } else { appleVy = 0; appleState = 'rest'; }
       }
     }
   }
