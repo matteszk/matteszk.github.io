@@ -706,17 +706,11 @@ function breath(pan,vol,inhale){if(!AC||!soundOn||!inhale)return;const t=AC.curr
  const am=AC.createGain(),lfo=AC.createOscillator(),ld=AC.createGain();lfo.frequency.value=22+Math.random()*6;ld.gain.value=.5;am.gain.value=.5;lfo.connect(ld);ld.connect(am.gain);
  const env=AC.createGain();env.gain.setValueAtTime(.0001,t);env.gain.exponentialRampToValueAtTime(.35,t+dur*.45);env.gain.exponentialRampToValueAtTime(.0001,t+dur);
  o.connect(lp);lp.connect(am);am.connect(env);env.connect(out);o.start(t);lfo.start(t);o.stop(t+dur);lfo.stop(t+dur)}
-// ---------- background music: "Over the pass" (upbeat cimbalom and flute adventure tune in D major) ----------
-const MUS={bpm:112,drone:[38,45],
- seq:[[74,.5],[73,.5],[71,.5],[69,.5],[71,.5],[73,.5],[74,1],
-      [74,.5],[76,.5],[74,.5],[71,.5],[67,1],[71,1],
-      [69,.5],[71,.5],[73,.5],[76,.5],[73,1],[69,1],
-      [74,1.5],[69,.5],[66,1],[null,1],
-      [71,.5],[73,.5],[74,.5],[71,.5],[66,1],[71,1],
-      [67,.5],[69,.5],[71,.5],[74,.5],[79,1],[76,1],
-      [76,.5],[74,.5],[73,.5],[71,.5],[69,.5],[71,.5],[73,1],
-      [74,2],[null,2]],
- cimb:[[50,54,57],[55,59,62],[57,61,64],[50,54,57],[47,50,54],[55,59,62],[57,61,64],[50,54,57]]};
+// ---------- background music: Transylvanian chords on a lone cimbalom, plucked with lots of air ----------
+// D minor, A, D minor, C, F, C, A, D minor; the lone high notes trace a slow falling line (with the folk raised fourth, G#, in bar 3)
+const MUS={bpm:88,drone:[38,45],
+ cimb:[[50,53,57],[45,49,52],[50,53,57],[48,52,55],[53,57,60],[48,52,55],[45,49,52],[50,53,57]],
+ tops:[69,73,68,72,72,67,64,62]};
 let mBus=null,mSend=null,mNodes=[],mTimer=null,mOn=false;
 const mhz=m=>440*Math.pow(2,(m-69)/12);
 function musicBus(){if(mBus)return;mBus=AC.createGain();mBus.gain.value=.55;mBus.connect(master);
@@ -745,10 +739,19 @@ function mCimbPart(start,beat,beats){const run=[0,2,1,2,0,1,2,1];
   if(e%8===0){[0,1,2].forEach(k=>mCimb(ch[k]+12,t+k*.03,.6));continue}
   mCimb(ch[run[e%8]]+oct,t,e%2?.35:.5);
   if(e%16===13)[0,.07,.14,.21,.28].forEach(o=>mCimb(ch[2]+12,t+o,.22))}}
-function musicStart(){if(mOn||!AC)return;mOn=true;musicBus();mWind();const beat=60/MUS.bpm,beats=MUS.seq.reduce((a,[,b])=>a+b,0),total=beats*beat;
+function mCimbRing(m,t,vel){[0,.12].forEach((det,k)=>{[[1,1],[2,.3],[3.01,.12],[4.2,.05]].forEach(([mul,amp])=>{const o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';o.frequency.value=mhz(m)*mul*(1+det/100);const dec=2.6/mul;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05*amp*vel*(k?.7:1),t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+dec);
+  const pan=AC.createStereoPanner?AC.createStereoPanner():null;if(pan){pan.pan.value=(m%7)/7*.6-.3;o.connect(g);g.connect(pan);pan.connect(mSend)}else{o.connect(g);g.connect(mSend)}o.start(t);o.stop(t+dec+.05);mNodes.push(o)})})}
+// spaced-out plucked chords: a rolled chord with its bass on the downbeat, a lone high note in the gap, a softer echo of the chord, then air
+function mCimbPluck(start,beat,beats){const bars=Math.round(beats/4);
+ for(let b=0;b<bars;b++){const ch=MUS.cimb[b%MUS.cimb.length],t=start+b*4*beat,top=(MUS.tops?MUS.tops[b%MUS.tops.length]+12:(b%2?ch[1]+12:ch[2]+12));
+  mCimbRing(ch[0]-12,t,.9);[0,1,2].forEach(k=>mCimbRing(ch[k],t+.05+k*.06,.55));
+  mCimbRing(top,t+1.5*beat,.4);
+  [1,2].forEach((k,i)=>mCimbRing(ch[k]+12,t+2*beat+i*.07,.32));
+  if(b%4===3)mCimbRing(ch[0]+12,t+3.5*beat,.28)}}
+function musicStart(){if(mOn||!AC)return;mOn=true;musicBus();mWind();const beat=60/MUS.bpm,beats=MUS.cimb.length*4,total=beats*beat;
  const t0=AC.currentTime+.8;
- const loop=start=>{if(!mOn)return;let t=start;mDrone(start,total+1);mCimbPart(start,beat,beats);
-  if(start-t0>=total-.1)MUS.seq.forEach(([m,b])=>{if(m!=null)mFlute(m,t,b*beat*.95);t+=b*beat}); // cimbalom alone the first time round, then the flute takes the tune
+ const loop=start=>{if(!mOn)return;mDrone(start,total+1);mCimbPluck(start,beat,beats);
   mTimer=setTimeout(()=>loop(start+total),(start+total-AC.currentTime-.6)*1000)};
  loop(t0)}
 function musicStop(){mOn=false;clearTimeout(mTimer);mNodes.forEach(n=>{try{n.stop()}catch(e){}});mNodes=[]}
