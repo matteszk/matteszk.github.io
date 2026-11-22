@@ -487,9 +487,9 @@ const BK={fh:[[0,-.45],[.2,.35],[.36,.55],[.52,-.15],[.68,-.7],[.86,-.6],[1,-.45
  p:[[0,.08],[.2,.05],[.4,-.1],[.62,-.04],[.85,.07],[1,.08]],
  nk:[[0,.1],[.18,.2],[.42,-.12],[.68,-.06],[.88,.06],[1,.1]]}; // neck dips as the fronts land, rises on the push
 function bound(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;
- const u=((ph/(2*Math.PI))%1+1)%1,pitch=kf(BK.p,u);
+ const u=((ph/(2*Math.PI))%1+1)%1,pitch=-.01+.09*Math.cos(2*Math.PI*(u-.95)),nb=.03+.13*Math.cos(2*Math.PI*(u-.18)); // body pitch and neck bob as smooth waves, no corners
  L.forEach((l,i)=>{const lu=(((u-(i%2?LEAD:0))%1)+1)%1;l.hip.rotation.x=kf(l.front?BK.fh:BK.rh,lu);l.knee.rotation.x=kf(l.front?BK.fk:BK.rk,lu)});
- rig.position.y=-.13+kf(BK.y,u);body.rotation.x=pitch;neck.rotation.x=-pitch*.7+.05+kf(BK.nk,u);head.rotation.x=-pitch*.3-kf(BK.nk,u)*.4;
+ rig.position.y=-.13+kf(BK.y,u);body.rotation.x=pitch;neck.rotation.x=-pitch*.7+.05+nb;head.rotation.x=-pitch*.3-nb*.4;
  beard.rotation.x=Math.sin(ph*2+1)*.12;tail.rotation.x=-.4-pitch*1.5}
 const apple=new THREE.Group();
 {// tipped-over barrel with apples spilling out across the grass
