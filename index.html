@@ -76,15 +76,6 @@
   #scnbar{position:fixed;right:14px;bottom:12px;z-index:9;display:flex;align-items:center;gap:2px;font:11px/1 ui-monospace,Menlo,monospace;color:rgba(255,255,255,.8);background:rgba(0,0,0,.35);border-radius:4px}
   #scnbar button{font:inherit;color:inherit;background:none;border:0;padding:5px 8px;cursor:pointer}#scnbar button:hover{color:#e7b84a}
   #scn{padding:0 2px}
-  /* light CRT */
-  #crt{position:fixed;inset:0;z-index:50;pointer-events:none;transition:opacity 1.6s ease,visibility 0s linear 1.6s}
-  body.crtoff #crt{opacity:0;visibility:hidden}
-  
-  #crt .lines{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1) 0 38%,rgba(0,0,0,0) 38% 100%);background-size:100% max(3px,calc(100vh / 240))}
-  #crt .glow{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 65%,rgba(0,0,0,.26) 100%)}
-  #crt .roll{position:absolute;left:0;right:0;height:20vh;background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.02),rgba(255,255,255,0));animation:roll 9s linear infinite}
-  @keyframes roll{from{top:-25vh}to{top:105vh}}
-  #crt canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.025;mix-blend-mode:screen}
   #scnbar{display:none}html.dev #scnbar{display:flex}
   #fallback{display:none;position:fixed;inset:0;z-index:100;background:#1c1820;color:#f4e9c8;font-family:Georgia,serif;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px}
   #fallback a{color:#e7b84a}
@@ -95,7 +86,6 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="crt"><canvas id="noise"></canvas><div class="lines"></div><div class="roll"></div><div class="glow"></div></div>
 <div id="fade"></div>
 <div id="vig"></div>
 
@@ -844,8 +834,6 @@ function boardFrame(TT){const lt=boardT;
 <script>
 if(matchMedia('(prefers-reduced-motion: reduce)').matches&&location.hash!=='#play'&&!(location.hash==='#dev'||!/(^|\.)matthewszklarz\.com$|\.github\.io$/.test(location.hostname)))location.replace('/work/');
 if(DEV)document.documentElement.classList.add('dev');
-(()=>{const n=document.getElementById('noise'),x=n.getContext('2d');n.width=160;n.height=120;const im=x.createImageData(160,120);
- (function f(){const d=im.data;for(let i=0;i<d.length;i+=4){const v=Math.random()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}x.putImageData(im,0,0);setTimeout(()=>requestAnimationFrame(f),80)})()})();
 // Menu
 document.getElementById('scprev').onclick=()=>window.jumpScene(-1);document.getElementById('scnext').onclick=()=>window.jumpScene(1);
 const snd=document.getElementById('snd');
