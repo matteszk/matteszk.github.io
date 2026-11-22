@@ -59,11 +59,14 @@
   S.add(new THREE.Mesh(gn, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassT })));
 
   // forest: rings of trees around the clearing, thicker behind the goat
-  for (let i = 0; i < 70; i++) {
+  const spots = [];
+  for (let i = 0; i < 110; i++) {
     const a = rnd() * Math.PI * 2, r = 7 + rnd() * 20;
     const x = Math.cos(a) * r, z = Math.sin(a) * r - 3;
     if (z > -4 && Math.abs(x) < 8) continue; // keep the clearing between camera and goat open
-    if (z > 3) continue;
+    if (z > 3 || (x > 0 && z > -2 && x < 14)) continue; // nothing crowding the right foreground
+    if (spots.some(([u, v]) => Math.hypot(u - x, v - z) < 3.2)) continue; // keep trees from overlapping
+    spots.push([x, z]);
     const t = rnd() < .45 ? TREES.fir() : rnd() < .85 ? TREES.pine() : TREES.dead();
     t.position.set(x, 0, z); t.scale.setScalar(.9 + rnd() * .7); t.rotation.y = rnd() * 6; S.add(t);
   }
