@@ -308,8 +308,35 @@
     EARS.forEach(({ ear, sd }) => { ear.rotation.z = -.35 * sd + Math.max(0, Math.sin(t * 3 + sd * 2) - .94) * 6 * sd + lift * .25 * sd; });
     tail.rotation.x = -.5 + Math.sin(t * (moving ? 5 : 2.4)) * .25;
     beard.rotation.x = Math.sin(t * 1.3) * .05;
+    if (hopT >= 0) hop(dt);
     placeBlob();
   }
+
+  // click the goat: a little goat hop - crouch, spring up with the front leading, tuck, a twist of the head, then a soft landing
+  let hopT = -1;
+  const ease = x => x * x * (3 - 2 * x);
+  function hop(dt) {
+    hopT += dt; const T = hopT;
+    const CROUCH = .2, AIR = .42, LAND = .38;
+    let y = 0, pitch = 0, fh = 0, fk = 0, rh = 0, rk = 0, tw = 0, nk = 0;
+    if (T < CROUCH) { const u = ease(T / CROUCH);                       // load the springs
+      y = -.16 * u; pitch = .04 * u; fh = .25 * u; fk = .45 * u; rh = -.3 * u; rk = .55 * u; nk = .12 * u; }
+    else if (T < CROUCH + AIR) { const u = (T - CROUCH) / AIR;          // airborne: a real arc, nose up then level then nose down
+      y = .5 * Math.sin(Math.PI * u) - .16 * Math.max(0, 1 - u * 6);
+      pitch = -.2 * Math.cos(Math.PI * u);
+      fh = -.55 * Math.sin(Math.PI * Math.min(1, u * 1.3)); fk = .8 * Math.sin(Math.PI * u);
+      rh = .45 * Math.sin(Math.PI * Math.max(0, u * 1.2 - .2)); rk = .5 * Math.sin(Math.PI * u);
+      tw = .28 * Math.sin(Math.PI * u); nk = -.18 * Math.sin(Math.PI * u); }
+    else if (T < CROUCH + AIR + LAND) { const u = (T - CROUCH - AIR) / LAND; // absorb the landing and settle
+      const d = Math.exp(-u * 5) * Math.cos(u * 9);
+      y = -.12 * d; pitch = .06 * d; fh = .2 * d; fk = .4 * d; rh = -.15 * d; rk = .35 * d; nk = .1 * d; }
+    else { hopT = -1; return; }
+    rig.position.y = -.13 + y; body.rotation.x = pitch;
+    LEGS.forEach(([l], i) => { const front = i < 2; l.hip.rotation.x = front ? fh : rh; l.knee.rotation.x = front ? fk : rk; });
+    neck.rotation.x += nk; head.rotation.z = tw * (hopSide);
+  }
+  let hopSide = 1;
+  const goatAt = e => { const r = wrap.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, cam); return ray.intersectObject(goat, true).length > 0; };
 
   // click the ground inside the ring: an apple pops in there
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
@@ -320,7 +347,9 @@
     return ray.ray.intersectPlane(floor, hit) && inRing(hit.x, hit.z, 0) ? hit : null;
   }
   wrap.addEventListener('click', e => {
-    if (reduce || appleState !== 'none') return; // one apple at a time
+    if (reduce) return;
+    if (goatAt(e)) { if (state === 'idle' && hopT < 0) { hopT = 0; hopSide = Math.random() < .5 ? -1 : 1; } return; } // tap the goat: he hops
+    if (appleState !== 'none') return; // one apple at a time
     const g = groundAt(e); if (!g) return;
     // keep the apple a little inside the stones
     const dx = g.x - RING.x, dz = g.z - RING.z, ov = Math.hypot(dx / (RING.rx - .7), dz / (RING.rz - .7));
@@ -330,7 +359,7 @@
   // pointer cursor over ground inside the ring
   wrap.addEventListener('pointermove', e => {
     if (reduce || e.pointerType !== 'mouse') return;
-    wrap.style.cursor = groundAt(e) && appleState === 'none' ? 'pointer' : '';
+    wrap.style.cursor = (goatAt(e) && state === 'idle') || (groundAt(e) && appleState === 'none') ? 'pointer' : '';
   });
 
   // --- camera: a very slow, small drift so the scene feels alive ---
