@@ -475,15 +475,19 @@ function gallop(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation
  tail.rotation.x=-.6+Math.sin(ph*2)*.2}
 // bound: front pair lands, rear pair lands and drives, then a long airborne leap with legs gathering and reaching
 const BOUND=true,BRATE=1.6,LEAD=.08,clamp01=x=>Math.max(0,Math.min(1,x));
+// keyframed from a real goat running (screen recording): land on the front pair, rear pair lands well forward and drives,
+// then a long suspension with every leg stretched outward - fronts reaching ahead, hinds trailing behind with the hocks pointing back
+const kf=(K,u)=>{for(let i=0;i<K.length-1;i++){const[a,va]=K[i],[b,vb]=K[i+1];if(u>=a&&u<=b){const t=(u-a)/(b-a),e=t*t*(3-2*t);return va+(vb-va)*e}}return K[0][1]};
+const BK={fh:[[0,-.45],[.2,.35],[.36,.55],[.52,-.15],[.68,-.7],[.86,-.6],[1,-.45]],
+ fk:[[0,0],[.2,.05],[.36,.75],[.5,.9],[.62,.2],[.7,0],[1,0]],
+ rh:[[0,-.35],[.15,-.45],[.4,.45],[.6,.75],[.78,.3],[1,-.35]],
+ rk:[[0,-.6],[.15,-.35],[.3,-.5],[.42,-.12],[.6,-.18],[.8,-.85],[1,-.6]],
+ y:[[0,-.04],[.12,-.09],[.3,-.06],[.42,0],[.64,.46],[.86,.02],[1,-.04]],
+ p:[[0,.1],[.15,.06],[.32,-.1],[.45,-.14],[.64,0],[.85,.1],[1,.1]]};
 function bound(ph){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1});head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;
- const u=((ph/(2*Math.PI))%1+1)%1,s=clamp01((u-.4)/.6);
- const y=u<.4?-.07*Math.sin(Math.PI*u/.4):.5*Math.sin(Math.PI*s);
- const pitch=u<.2?.1*(1-u/.2):u<.4?-.16*((u-.2)/.2):-.16+.28*s;
- // a real bound isn't in unison: in each pair one leg leads and its partner lands a beat later (LEAD of a stride)
- const FH=u=>u<.25?-.5+.95*(u/.25):u<.4?.45:.45-1.05*clamp01((u-.4)/.4),FK=u=>.95*Math.sin(Math.PI*clamp01((u-.3)/.45));
- const RH=u=>u<.15?-.4:u<.4?-.4+1*((u-.15)/.25):.6-1*clamp01((u-.4)/.45),RK=u=>-.8*Math.sin(Math.PI*clamp01((u-.45)/.4));
- L.forEach((l,i)=>{const lu=(((u-(i%2?LEAD:0))%1)+1)%1;l.hip.rotation.x=l.front?FH(lu):RH(lu);l.knee.rotation.x=l.front?FK(lu):RK(lu)});
- rig.position.y=-.13+y;body.rotation.x=pitch;neck.rotation.x=-pitch*.7+.05;head.rotation.x=-pitch*.3;
+ const u=((ph/(2*Math.PI))%1+1)%1,pitch=kf(BK.p,u);
+ L.forEach((l,i)=>{const lu=(((u-(i%2?LEAD:0))%1)+1)%1;l.hip.rotation.x=kf(l.front?BK.fh:BK.rh,lu);l.knee.rotation.x=kf(l.front?BK.fk:BK.rk,lu)});
+ rig.position.y=-.13+kf(BK.y,u);body.rotation.x=pitch;neck.rotation.x=-pitch*.7+.05;head.rotation.x=-pitch*.3;
  beard.rotation.x=Math.sin(ph*2+1)*.12;tail.rotation.x=-.4-pitch*1.5}
 const apple=new THREE.Group();
 {// tipped-over barrel with apples spilling out across the grass
@@ -772,10 +776,10 @@ window.toggleSound=()=>{initAudio();if(!AC)return false;soundOn=!soundOn;if(AC.s
 window.wakeAudio=()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()};
 const sp=new THREE.Vector3();let lastShot=-1,lastFoot=[0,0,0,0],lastPr=0;
 function hooves(idx,gait,ph,gp){
- if(idx!==lastShot){lastShot=idx;lastFoot=[0,0,0,0].map((_,i)=>Math.floor((ph+GOFF[i]*2*Math.PI-Math.PI/2)/(2*Math.PI)));lastPr=Math.floor(ph/(2*Math.PI));if(BOUND){const q=ph*BRATE/(2*Math.PI);lastFoot[0]=Math.floor(q);lastFoot[2]=Math.floor(q-.18)}return}
+ if(idx!==lastShot){lastShot=idx;lastFoot=[0,0,0,0].map((_,i)=>Math.floor((ph+GOFF[i]*2*Math.PI-Math.PI/2)/(2*Math.PI)));lastPr=Math.floor(ph/(2*Math.PI));if(BOUND){const q=ph*BRATE/(2*Math.PI);lastFoot[0]=Math.floor(q);lastFoot[2]=Math.floor(q-.15)}return}
  sp.copy(gp);sp.project(cam);if(sp.z>1)return; // behind camera
  const pan=sp.x*.9,dist=cam.position.distanceTo(gp),vol=Math.min(.5,Math.max(.03,5/dist))*(Math.abs(sp.x)>1.2?.5:1);
- if(gait==='gallop'&&BOUND){const q=ph*BRATE/(2*Math.PI),nf=Math.floor(q),nr=Math.floor(q-.18);
+ if(gait==='gallop'&&BOUND){const q=ph*BRATE/(2*Math.PI),nf=Math.floor(q),nr=Math.floor(q-.15);
    if(nf>lastFoot[0]){lastFoot[0]=nf;clop(pan+.04,vol,false,0);setTimeout(()=>clop(pan-.04,vol*.9,false,1),48)}
    if(nr>lastFoot[2]){lastFoot[2]=nr;clop(pan+.04,vol*.85,false,2);setTimeout(()=>clop(pan-.04,vol*.8,false,3),48)}}
  else if(gait==='gallop'){for(let i=0;i<4;i++){const n=Math.floor((ph+GOFF[i]*2*Math.PI-Math.PI/2)/(2*Math.PI)); // foot lands as swing ends
