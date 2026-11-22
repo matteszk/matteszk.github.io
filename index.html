@@ -428,7 +428,7 @@ const beard=new THREE.Group();beard.position.set(0,-.3,.46);head.add(beard);
   hp.addScaledVector(dir,len*.95);ang-=.32}
  const e=new THREE.Mesh(new THREE.BoxGeometry(.02,.055,.11),eyeM);e.position.set(.315*sd,.1,.24);e.rotation.y=-.25*sd;head.add(e);EYES.push(e);
  const eg=new THREE.ConeGeometry(.12,.3,4);eg.translate(0,.15,0);eg.rotateZ(-Math.PI/2*sd);eg.scale(1,1,.38);
- const ear=new THREE.Mesh(eg,coat);ear.position.set(.27*sd,.18,-.1);ear.rotation.z=-.35*sd;head.add(ear);
+ const ear=new THREE.Mesh(eg,coat);ear.position.set(.18*sd,.17,-.02);ear.rotation.z=-.35*sd;head.add(ear);
  const ein=new THREE.Mesh(eg,coat2);ein.scale.set(.8,.7,.5);ein.position.z=.02;ear.add(ein);EARS.push({ear,sd})});
 // ear flicks: each ear twitches now and then, on its own rhythm
 function earWiggle(t){EARS.forEach(({ear,sd})=>{ear.rotation.z=-.35*sd+Math.max(0,Math.sin(t*3+sd*2)-.94)*6*sd})}

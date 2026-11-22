@@ -125,7 +125,7 @@
     const e = new THREE.Mesh(new THREE.BoxGeometry(.02, .055, .11), eyeM); e.position.set(.315 * sd, .1, .24); e.rotation.y = -.25 * sd; head.add(e); EYES.push(e);
     // big grey ears that stick out sideways
     const eg = new THREE.ConeGeometry(.12, .3, 4); eg.translate(0, .26, 0); eg.rotateZ(-Math.PI / 2 * sd); eg.scale(1, 1, .38);
-    const ear = new THREE.Mesh(eg, earM); ear.position.set(.27 * sd, .18, -.1); ear.rotation.z = -.35 * sd; head.add(ear);
+    const ear = new THREE.Mesh(eg, earM); ear.position.set(.18 * sd, .17, -.02); ear.rotation.z = -.35 * sd; head.add(ear);
     const ein = new THREE.Mesh(eg, earIn); ein.scale.set(.8, .7, .5); ein.position.set(0, 0, .02); ear.add(ein); EARS.push({ ear, sd });
   });
   const tail = new THREE.Group(); tail.position.set(0, .42, -1.05); body.add(tail); const tl = cyl(.07, .02, .35, coat, 4); tl.position.y = .16; tail.add(tl);
