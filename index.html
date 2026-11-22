@@ -125,7 +125,7 @@ const cv=document.getElementById('c');
 let R;try{R=new THREE.WebGLRenderer({canvas:cv,antialias:false})}catch(e){document.getElementById('fallback').style.display='flex';return}R.setPixelRatio(1);
 const S=new THREE.Scene();
 const fogC=new THREE.Color('#86686f');S.background=fogC;S.fog=new THREE.Fog(new THREE.Color('#4a3b44'),50,330); // distance fades to a dusky tone that matches the far ground, not the pale sky
-const cam=new THREE.PerspectiveCamera(50,1,.1,900);
+const cam=new THREE.PerspectiveCamera(50,1,.1,2200);
 function size(){R.setSize(Math.ceil(innerWidth/PX),Math.ceil(innerHeight/PX),false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
 addEventListener('resize',size);size();
 
@@ -175,10 +175,10 @@ for(let i=0;i<34;i++){const x=Math.random()*64,y=Math.random()*64,r=4+Math.rando
  wrapDraw(()=>{const g=tx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');tx.fillStyle=g;tx.beginPath();tx.ellipse(x,y,r,r*sq,rot,0,7);tx.fill()})}
 const gt=new THREE.CanvasTexture(tc);gt.wrapS=gt.wrapT=THREE.RepeatWrapping;gt.repeat.set(110,110);
 gt.magFilter=THREE.LinearFilter;gt.minFilter=THREE.LinearMipmapLinearFilter;gt.anisotropy=R.capabilities.getMaxAnisotropy();
-S.add(new THREE.Mesh(gn,new THREE.MeshLambertMaterial({vertexColors:true,map:gt,fog:false})));
+const GROUND=new THREE.Mesh(gn,new THREE.MeshLambertMaterial({vertexColors:true,map:gt,fog:false}));S.add(GROUND);
 
 // trees + rocks (kept off the hill crest and run lanes)
-const M=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true});
+const M=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true,fog:false});
 const trunkM=M('#4a3626'),birchM=M('#d9d4c8'),pineM=M('#2b3a2a'),firM=M('#22301f'),leafM=[M('#3d5230'),M('#4f5f2c'),M('#5e5a2e'),M('#6b4a2a')],deadM=M('#3a302a');
 const rg=new THREE.DodecahedronGeometry(1.2,0),rm=M('#6a6670');
 function mk(geo,mat,x,y,z,sx=1,sy=1,sz=1){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);return m}
@@ -188,11 +188,14 @@ const TREES={
   for(let i=0;i<3;i++)g.add(mk(new THREE.ConeGeometry(1.9-i*.5,2.6,6),firM,0,2.4+i*1.5,0));return g},
  oak(){const g=new THREE.Group(),lm=leafM[Math.random()*leafM.length|0];g.add(mk(new THREE.CylinderGeometry(.35,.5,2.6,5),trunkM,0,1.3,0));
   g.add(mk(new THREE.IcosahedronGeometry(2.2,0),lm,0,3.8,0));g.add(mk(new THREE.IcosahedronGeometry(1.5,0),lm,1.3,3.2,.4));g.add(mk(new THREE.IcosahedronGeometry(1.4,0),lm,-1.1,3.4,-.5));return g},
- birch(){const g=new THREE.Group();g.add(mk(new THREE.CylinderGeometry(.16,.22,4.5,5),birchM,0,2.25,0));
-  g.add(mk(new THREE.IcosahedronGeometry(1.2,0),leafM[1],0,4.8,0,1,1.6,1));return g},
+ maple(){const g=new THREE.Group(),lm=leafM[2+(Math.random()*2|0)];g.add(mk(new THREE.CylinderGeometry(.28,.42,3.2,5),trunkM,0,1.6,0));
+  [[0,4.4,0,1.8],[1.1,3.7,.6,1.3],[-1,3.9,-.5,1.35],[.3,5.2,-.4,1.1],[-.5,3.4,1,1.1]].forEach(([x,y,z,r])=>g.add(mk(new THREE.IcosahedronGeometry(r,0),lm,x,y,z)));return g},
  dead(){const g=new THREE.Group();g.add(mk(new THREE.CylinderGeometry(.15,.35,4,5),deadM,0,2,0));
   [[.9,3,.6],[-.8,2.4,-.9],[.6,3.6,-1.1]].forEach(([r,h,t])=>{const b=mk(new THREE.CylinderGeometry(.06,.12,1.8,4),deadM,0,h,0);b.rotation.z=r;b.rotation.y=t;g.add(b)});return g}};
-const kinds=['pine','pine','fir','fir','oak','oak','birch','dead'];
+const kinds=['pine','pine','fir','fir','oak','oak','maple','dead'];
+// canopy radius of each model at scale 1, and one shared register so no two trees (or rocks) ever overlap
+const CR={pine:1.7,fir:2,oak:3.1,maple:2.6,dead:1.4,rock:1.3},ALLT=[];
+const treeFree=(x,z,r)=>ALLT.every(([u,v,q])=>(u-x)**2+(v-z)**2>(r+q+.3)**2),treeAdd=(x,z,r)=>ALLT.push([x,z,r]);
 // natural groupings: trees clump into groves with open glades between, and clearings get ragged, wavy edges
 const clump=(x,z)=>Math.sin(x*.021+1.7)*Math.cos(z*.018+.4)+Math.sin(x*.047-z*.039+2.2)*.6+Math.sin(x*.11+z*.093)*.3;
 const ragged=(x,z)=>12+Math.sin(x*.07+z*.05)*7+Math.sin(x*.19-z*.23)*5+Math.random()*8; // how far past each clearing's box trees also stay out
@@ -203,14 +206,15 @@ for(let i=0,n=0;i<4000&&n<420;i++){const x=(Math.random()-.5)*700,z=(Math.random
  const mg=ragged(x,z);
  if(inBox(x,z,-130,130,-130,90,mg)||inBox(x,z,-250,-160,-100,-20,mg)||inBox(x,z,-125,-55,160,230,mg)||inBox(x,z,-70,160,92,270,mg*.4)||(x>330-mg&&x<470+mg&&Math.abs(z-60)<90+mg))continue;
  if(Math.abs(z-200)<10+Math.random()*6||Math.abs(z+200)<10+Math.random()*6||Math.abs(x-200)<10+Math.random()*6)continue;
- if(placedT.some(([u,v])=>(u-x)**2+(v-z)**2<36))continue;placedT.push([x,z]);n++;
- const tree=Math.random()<.78,s=.7+Math.random()*1.2,m=tree?TREES[kinds[Math.random()*kinds.length|0]]():new THREE.Mesh(rg,rm);m.scale.setScalar(s);
+ const tree=Math.random()<.78,s=.7+Math.random()*1.2,kd=tree?kinds[Math.random()*kinds.length|0]:'rock';
+ if(!treeFree(x,z,CR[kd]*s))continue;treeAdd(x,z,CR[kd]*s);placedT.push([x,z]);n++;
+ const m=tree?TREES[kd]():new THREE.Mesh(rg,rm);m.scale.setScalar(s);
  m.position.set(x,hgt(x,z)+(tree?-.1:.3),z);m.rotation.y=Math.random()*6;S.add(m)}
 
 // a ring of Tatra-style massifs around the whole valley: sharp rocky summits over green lower slopes, hazed toward the fog colour
 {const fc=new THREE.Color('#86686f').multiplyScalar(.62),RC={x:110,z:-20,rx:560,rz:500};
  const grass=new THREE.Color('#3e5634'),scrub=new THREE.Color('#5c6a44'),rock=new THREE.Color('#8b8590'),rockD=new THREE.Color('#5f5866'),snowC=new THREE.Color('#dfe2ea');
- const mmat=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,fog:false});
+ const mmat=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,fog:false,side:THREE.DoubleSide});
  function massif(W,D,H,haze){const NX=34,NZ=12,g=new THREE.PlaneGeometry(W,D,NX,NZ);g.rotateX(-Math.PI/2);
   const P=g.attributes.position,pk=[];const n=2+(Math.random()*3|0);
   for(let k=0;k<n;k++)pk.push({x:(k+.5)/n*W-W/2+(Math.random()-.5)*W*.18,z:(Math.random()-.3)*D*.25,h:H*(.6+Math.random()*.4),s:W*(.24+Math.random()*.1)});
@@ -219,7 +223,7 @@ for(let i=0,n=0;i<4000&&n<420;i++){const x=(Math.random()-.5)*700,z=(Math.random
    for(const q of pk){const d=Math.hypot((x-q.x)/q.s,(z-q.z)/(q.s*1.1));y=Math.max(y,q.h*Math.pow(Math.max(0,1-d),1.15))}
    const ridge=H*.42*Math.max(0,1-Math.abs(z)/(D*.42)); y=Math.max(y,ridge*(.75+.25*Math.sin(x*.05)));
    const edge=Math.min(1,(W/2-Math.abs(x))/(W*.12)); y*=Math.max(0,edge);
-   y+=(Math.random()-.5)*H*.06*(y/H); P.setY(i,y-30)}
+   y+=(Math.random()-.5)*H*.06*(y/H); const rim=Math.abs(x)>W/2-1||Math.abs(z)>D/2-1; P.setY(i,rim?-90:y-30)} // rim drops well below ground: no gap under any edge
   const gn=g.toNonIndexed();gn.computeVertexNormals();const Q=gn.attributes.position,N=gn.attributes.normal,col=[],c=new THREE.Color();
   for(let i=0;i<Q.count;i+=3){const yy=(Q.getY(i)+Q.getY(i+1)+Q.getY(i+2))/3+30,t=yy/H,steep=1-Math.abs(N.getY(i)),r=Math.random();
    if(t<.22)c.copy(grass).lerp(scrub,r*.5);else if(t<.38)c.copy(scrub).lerp(rockD,(t-.22)/.16+r*.2);
@@ -247,6 +251,7 @@ const castle=new THREE.Group();
 {// Bran-style castle: pale plaster, terracotta roofs, tall square tower, round tower, on a limestone outcrop
  const C=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true});
  const plaster=C('#e3d8c2'),plaster2=C('#d2c6ae'),stoneT=C('#9c8f7c'),terra=C('#b8562e'),terra2=C('#9e4626'),timber=C('#3a2a20'),lime=C('#c9bea3'),lime2=C('#b3a78c'),dark=C('#2a2420');
+ [[plaster,'#4a4032'],[plaster2,'#3e3528'],[stoneT,'#2a251e'],[terra,'#3a160a'],[terra2,'#2e1208'],[lime,'#2c2820'],[lime2,'#24201a']].forEach(([m,e])=>m.emissive=new THREE.Color(e)); // lift the castle off the mountains
  const winL=new THREE.MeshBasicMaterial({color:'#ffb347'});
  const bx=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);castle.add(o);return o};
  const roofP=(w,h,d,m,x,y,z)=>{const r=new THREE.Mesh(new THREE.ConeGeometry(1,1,4),m);r.rotation.y=Math.PI/4;r.scale.set(w*.72,h,d*.72);r.position.set(x,y+h/2,z);castle.add(r);return r};
@@ -318,20 +323,20 @@ HS.forEach(([x,z,r,t,red])=>house(x,z,r,t,red));
 {// dense fir forest on the slope behind the village, with a few autumn trees mixed in
  const FOREST=[[-60.0, 92.5], [-97.5, 75.5], [-105.0, 58.0], [-112.5, 25.5], [-115.0, 10.5], [-97.5, -2.0], [-55.0, -27.0], [-17.5, -30.0], [45.0, -30.0], [145.0, -32.0], [182.5, -17.0], [207.5, 5.5], [220.0, 28.0], [220.0, 88.0], [195.0, 111.8], [170.0, 114.2], [125.0, 126.8], [90.0, 115.5], [45.0, 93.0], [-5.0, 91.8], [-57.5, 102.5]],FT=[]; // outline drawn by hand over a top-down render
  const inPoly=(x,z)=>{let c=false;for(let i=0,j=FOREST.length-1;i<FOREST.length;j=i++){const[a,b]=FOREST[i],[u,v]=FOREST[j];if((b>z)!==(v>z)&&x<(u-a)*(z-b)/(v-b)+a)c=!c}return c};
- for(let i=0,n=0;i<20000&&n<450;i++){const x=-120+Math.random()*320,z=-40+Math.random()*130;
+ const orange=new THREE.MeshLambertMaterial({color:'#d8782a',flatShading:true,fog:false});
+ [[-36,82],[22,78],[70,86],[128,74],[150,92]].forEach(([x,z])=>{const t=TREES.oak();t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=orange});treeAdd(x,z,CR.oak*1.6);t.scale.setScalar(1.6);t.position.set(x,hgt(x,z)-.1,z);S.add(t)})
+ for(let i=0,n=0;i<40000&&n<450;i++){const x=-120+Math.random()*320,z=-40+Math.random()*130;
   if(!inPoly(x,z))continue;
   if(x>-40&&x<30&&z>-12&&z<64)continue; // opening shot: camera-to-goat sightline stays open
   if(x>112&&x<170&&z<6)continue;
   if(x>196)continue; // scene 5's camera starts just east of here // scene 2: the goat's run and the camera beside it
   if(Math.random()>.45+.4*Math.sin(x*.06+1)*Math.cos(z*.07))continue; // loose clumps
-  if(FT.some(([u,v])=>(u-x)**2+(v-z)**2<14))continue;FT.push([x,z]);n++;
-  const t=Math.random()<.9?TREES.fir():TREES.oak();if(t.children[1]&&Math.random()<.5)t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=leafM[3]});
-  const s2=1.4+Math.random()*1.4;t.scale.setScalar(s2);t.position.set(x,hgt(x,z)-.2,z);t.rotation.y=Math.random()*6;S.add(t)}
- const orange=new THREE.MeshLambertMaterial({color:'#d8782a',flatShading:true});
- [[-36,82],[22,78],[70,86],[128,74],[150,92]].forEach(([x,z])=>{const t=TREES.oak();t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=orange});t.scale.setScalar(1.6);t.position.set(x,hgt(x,z)-.1,z);S.add(t)})}
+  const kd=Math.random()<.82?'fir':Math.random()<.5?'oak':'maple',s2=1.2+Math.random()*1.1;
+  if(!treeFree(x,z,CR[kd]*s2))continue;treeAdd(x,z,CR[kd]*s2);FT.push([x,z]);n++;
+  const t=TREES[kd]();if(kd==='oak'&&Math.random()<.5)t.traverse(o=>{if(o.isMesh&&o.geometry.type==='IcosahedronGeometry')o.material=leafM[3]});t.scale.setScalar(s2);t.position.set(x,hgt(x,z)-.2,z);t.rotation.y=Math.random()*6;S.add(t)}}
 
 // fruit trees and haystacks between houses
-[[-2,150],[38,148],[74,148],[96,150],[18,122],[50,118],[90,120]].forEach(([x,z],i)=>{const t=TREES[i%2?'oak':'birch']();t.scale.setScalar(.8);t.position.set(x,hgt(x,z)-.1,z);S.add(t)});
+[[-2,150],[38,148],[74,148],[96,150],[18,122],[50,118],[90,120]].forEach(([x,z],i)=>{const t=TREES[i%2?'oak':'maple']();t.scale.setScalar(.8);t.position.set(x,hgt(x,z)-.1,z);S.add(t)});
 
 // small cabbage garden in the village (scene 2), between the lane and the houses
 {const dir=new THREE.Vector2(1,0),side=new THREE.Vector2(0,1),o=new THREE.Vector2(-44,172.5);
@@ -425,7 +430,7 @@ const beard=new THREE.Group();beard.position.set(0,-.26,.62);head.add(beard);
  for(let i=0;i<6;i++){const th=.17*(1-i*.1),len=.2,dir=new THREE.Vector3(.07*sd,Math.sin(ang),-Math.cos(ang)).normalize();
   const seg=B(th,th,len,i==5?hornTip:(i%2?hornM2:hornM));seg.position.copy(hp).addScaledVector(dir,len/2);seg.lookAt(seg.position.clone().add(dir));head.add(seg);
   hp.addScaledVector(dir,len*.92);ang-=.42}
- const e=B(.08,.1,.12,eyeM);e.position.set(.28*sd,.08,.42);head.add(e);EYES.push(e);
+ const e=B(.08,.075,.12,eyeM);e.position.set(.28*sd,.08,.42);head.add(e);EYES.push(e);
  const ear=B(.42,.1,.16,fur);ear.position.set(.38*sd,.12,.02);ear.rotation.z=-.35*sd;head.add(ear);EARS.push({ear,sd})});
 // ear flicks: each ear twitches now and then, on its own rhythm
 function earWiggle(t){EARS.forEach(({ear,sd})=>{ear.rotation.z=-.35*sd+Math.max(0,Math.sin(t*3+sd*2)-.94)*6*sd})}
@@ -503,11 +508,20 @@ const apple=new THREE.Group();
  // a few apple trees around the clearing
  const trunk=new THREE.MeshLambertMaterial({color:'#5a3e28',flatShading:true}),crown=new THREE.MeshLambertMaterial({color:'#4a6a32',flatShading:true}),crown2=new THREE.MeshLambertMaterial({color:'#567a38',flatShading:true});
  const fruit=new THREE.MeshLambertMaterial({color:'#d42a2a',flatShading:true}),fg=new THREE.IcosahedronGeometry(.16,0);
- [[-3,-10,1.1],[6.5,-11,1.25],[12,-6,1],[-9,-6,.95]].forEach(([x,z,sc])=>{const t=new THREE.Group();t.position.set(x,0,z);t.scale.setScalar(sc);apple.add(t);
-  const tr=new THREE.Mesh(new THREE.CylinderGeometry(.3,.45,3,6),trunk);tr.position.y=1.5;tr.rotation.z=.06;t.add(tr);
-  [[0,3.9,0,2.2,crown],[1.3,3.4,.5,1.5,crown2],[-1.2,3.5,-.4,1.6,crown2],[.2,4.6,-.6,1.4,crown]].forEach(([cx,cy,cz,r,mm])=>{const c=new THREE.Mesh(new THREE.IcosahedronGeometry(r,0),mm);c.position.set(cx,cy,cz);t.add(c)});
-  for(let k=0;k<14;k++){const a=rnd()*6.283,h=3+rnd()*1.8,rr=1.6+rnd()*.6,f=new THREE.Mesh(fg,fruit);f.position.set(Math.cos(a)*rr,h,Math.sin(a)*rr);t.add(f)}
-  for(let k=0;k<3;k++){const f=new THREE.Mesh(ag,am[k%3]);f.scale.setScalar(.8);f.position.set((rnd()-.5)*3,.22,(rnd()-.5)*3);t.add(f)}});
+ const crowns=[crown,crown2,new THREE.MeshLambertMaterial({color:'#5a7234',flatShading:true}),new THREE.MeshLambertMaterial({color:'#3f5e2c',flatShading:true})];
+ const fruits=['#d42a2a','#a8181e','#c0301e'].map(c=>new THREE.MeshLambertMaterial({color:c,flatShading:true}));
+ // three apple-tree forms: a round crown, a low wide spreader on a forked trunk, and a taller upright tree
+ const FORMS=[
+  {tr:[[0,0,3,.3,.45,.06,0]],cr:[[0,3.9,0,2.2],[1.3,3.4,.5,1.5],[-1.2,3.5,-.4,1.6],[.2,4.6,-.6,1.4]],fr:[3,1.8,1.6,.6]},
+  {tr:[[0,0,1.6,.32,.45,0,0],[.35,1.3,2,.2,.28,-.5,0],[-.35,1.3,2,.2,.28,.5,.3]],cr:[[1.4,3,.2,1.6],[-1.4,3.1,-.2,1.6],[0,3.4,.9,1.4],[0,3.5,-1,1.3],[0,3.9,0,1.3]],fr:[2.3,1.4,2,.8]},
+  {tr:[[0,0,3.8,.26,.4,.03,0]],cr:[[0,4.6,0,1.7],[.8,3.9,.4,1.2],[-.7,4.1,-.3,1.2],[.1,5.6,0,1.2]],fr:[3.6,2,1.2,.5]}];
+ [[-3,-10,1.1,0],[6.5,-11,1.2,1],[12,-6,1,2],[-9,-6,.95,1],[-14,-13,1.05,2],[1.5,-17,1.15,0],[15,-14,1,1],[-7,-18,1.1,2],[9,-19,.95,0]].forEach(([x,z,sc,f])=>{
+  const F=FORMS[f],t=new THREE.Group();t.position.set(x,0,z);t.scale.setScalar(sc);t.rotation.y=rnd()*6.28;apple.add(t);
+  const cm=crowns[rnd()*crowns.length|0],cm2=crowns[rnd()*crowns.length|0],fm=fruits[rnd()*3|0];
+  F.tr.forEach(([tx,ty,h,r0,r1,rz,rx])=>{const tr=new THREE.Mesh(new THREE.CylinderGeometry(r0,r1,h,6),trunk);tr.position.set(tx,ty+h/2,0);tr.rotation.z=rz;tr.rotation.x=rx;t.add(tr)});
+  F.cr.forEach(([cx,cy,cz,r],k)=>{const c=new THREE.Mesh(new THREE.IcosahedronGeometry(r*(.9+rnd()*.2),0),k%2?cm2:cm);c.position.set(cx,cy,cz);c.rotation.set(rnd()*3,rnd()*3,0);t.add(c)});
+  const [fy,fh,fr,fv]=F.fr;for(let k=0;k<14;k++){const a=rnd()*6.283,h=fy+rnd()*fh,rr=fr+rnd()*fv,q=new THREE.Mesh(fg,fm);q.position.set(Math.cos(a)*rr,h,Math.sin(a)*rr);t.add(q)}
+  for(let k=0;k<3;k++){const q=new THREE.Mesh(ag,am[k%3]);q.scale.setScalar(.8);q.position.set((rnd()-.5)*3,.22,(rnd()-.5)*3);t.add(q)}});
 }
 S.add(apple);
 function graze(t){EYES.forEach(e=>{e.material=eyeM;e.scale.y=1}); head.rotation.y=0;body.scale.y=1;chest.scale.y=hips.scale.y=1;// standing, head down to the apple, chewing
@@ -645,7 +659,7 @@ const shots=[
   cam:(gp,lt)=>{const a=-.9+lt*.045;return{pos:V(gp.x+Math.sin(a)*12,gp.y+3+lt*.25,gp.z+Math.cos(a)*12+6),look:V(gp.x,gp.y+3+lt*1.5,gp.z-30)}},
   moon:()=>V(120,170,-480)},
  {// 4: castle looming behind, goat runs toward camera
-  start:V(300,0,40),dir:V(-1,0,.12).normalize(),speed:8,gait:'gallop',
+  start:V(300,0,32),dir:V(-1,0,.3).normalize(),speed:8,gait:'gallop',
   cam:(gp,lt)=>({pos:V(250-lt*5.5,G(250-lt*5.5,48)+2.2,48),look:V(gp.x+(400-gp.x)*.3,gp.y+8,gp.z+3)}),
   moon:()=>V(520,150,-60)},
  {// 5: high sweeping orbit over the fields
@@ -761,6 +775,10 @@ S.traverse(o=>{if(!o.isMesh&&!o.isInstancedMesh)return;(Array.isArray(o.material
   const rad=Math.max(sz.x,sz.z)/2;if(rad>25)return; // terrain, mountains, big scenery
   if(segs.some(([a,b])=>dSeg(ctr,a,b)<rad+1.6))drop.push(o)});
  drop.forEach(o=>S.remove(o))}
+// opening shot is only the ridge, the moon and the goat: everything else is hidden while it plays
+const OPEN_KEEP=new Set([GROUND,goat,moon,stars,dome,ff,ml,ml.target,apple,blob]);
+const HIDE1=S.children.filter(o=>!OPEN_KEEP.has(o)&&!o.isLight&&!o.isSprite&&!o.isPoints);let hid1=null;
+function openingOnly(on){if(on&&!hid1){hid1=HIDE1.map(o=>o.visible);HIDE1.forEach(o=>o.visible=false)}else if(!on&&hid1){HIDE1.forEach((o,i)=>o.visible=hid1[i]);hid1=null}}
 const clk=new THREE.Clock(),tmp=new THREE.Vector3();
 function boardFrame(TT){const lt=boardT;
  fade.style.opacity=lt<.5?1-lt/.5:0;
@@ -809,7 +827,7 @@ function boardFrame(TT){const lt=boardT;
  if(hg!=='none')hooves(idx,hg,ph,gp);
  if(sh.gait==='graze'){const n=Math.floor((lt*6.6-Math.PI/2)/(2*Math.PI));if(n!==window._chew){const first=window._chew===undefined||n<window._chew;window._chew=n;
   if(!first&&Math.random()<.8){sp.copy(gp);sp.project(cam);crunch(sp.x*.9,Math.min(.85,Math.max(.12,10/cam.position.distanceTo(gp))))}}}
- const mp=sh.moon(lt).add(V(cam.position.x*.0,0,0));moon.position.copy(mp);moon.visible=idx===0;moon.lookAt(cam.position);
+ const mp=sh.moon(lt).add(V(cam.position.x*.0,0,0));moon.position.copy(mp);moon.visible=idx===0;openingOnly(idx===0&&mode==='film');moon.lookAt(cam.position);
  ml.position.copy(mp);ml.target.position.copy(gp);
  dome.position.copy(cam.position);stars.position.copy(cam.position);
  ff.position.set(gp.x,gp.y,gp.z);fmat.uniforms.t.value=T;
