@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campaign CTAs — Matthew Szklarz, Frontend Developer</title>
+<meta name="description" content="Case study: Campaign CTAs, a WordPress plugin for reusable call-to-action banners with automatic fallbacks. Originally built at Mendix, rebuilt as an open-source block plugin.">
+<meta property="og:title" content="Campaign CTAs — Matthew Szklarz">
+<meta property="og:description" content="Reusable WordPress CTAs: build once, update everywhere, with automatic fallbacks.">
+<meta property="og:image" content="https://matthewszklarz.com/work/campaign-ctas/hero-og.jpg">
+<meta name="theme-color" content="#1c1820">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 10.5 10 8.6 4.6 12.4 4 19.6l3.6 7.2 5.6 2.6 2.8-1.2 2.8 1.2 5.6-2.6 3.6-7.2-.6-7.2L22 8.6z' fill='%23b51f24'/%3E%3Cpath d='M16 10.5 10 8.6 4.6 12.4 4 19.6l5.4-2.4 3.4-5.4z' fill='%23e8453a'/%3E%3Cpath d='M16 10.5l-3.2 1.3-3.4 5.4L16 19l6.6-1.8-3.4-5.4z' fill='%23d42a2a'/%3E%3Cpath d='M4 19.6l3.6 7.2 5.6 2.6L16 19l-6.6-1.8z' fill='%23d42a2a'/%3E%3Cpath d='M16 10.5l3.2 1.3 3.4 5.4 5.4 2.4-.6-7.2L22 8.6z' fill='%23d42a2a'/%3E%3Cpath d='M15.2 10.8 15.6 4h1.8l-.6 6.8z' fill='%234a3020'/%3E%3Cpath d='M16.8 6.6c1.6-2.6 4.6-3.4 7-2.4-1.4 2.6-4.4 3.6-7 2.4z' fill='%235c8a32'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Germania+One&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1c1820; --bg2:#25202a; --card:#2b2530; --line:#3e3546;
+    --ink:#f1e8d2; --muted:#b9ad98; --gold:#e7b84a; --red:#d42a2e;
+    --paper:#e9dfc4; --paperInk:#2a1e14;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--gold);text-underline-offset:3px}
+  a:hover{color:#f3cf74}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:3px}
+  h1,h2,h3{font-family:"Germania One",Georgia,serif;font-weight:400;line-height:1.15;margin:0;letter-spacing:.01em}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  .narrow{max-width:720px}
+  .skip{position:absolute;left:-999px;top:8px;background:var(--gold);color:#1c1820;padding:8px 12px;border-radius:4px;z-index:10}
+  .skip:focus{left:8px}
+
+  /* header (matches /work) */
+  header.top{border-bottom:1px solid var(--line);background:var(--bg2)}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:"Germania One",Georgia,serif;font-size:1.15rem}
+  .brand svg{width:28px;height:28px;flex:none}
+  nav.top a{color:var(--muted);text-decoration:none;font-size:.92rem;margin-left:20px}
+  nav.top a:hover{color:var(--ink)}
+  nav.top a.play{color:var(--gold)}
+  @media (max-width:640px){nav.top a:not(.play){display:none}}
+
+  /* intro */
+  .back{display:inline-block;margin-top:36px;color:var(--muted);text-decoration:none;font-size:.92rem}
+  .back:hover{color:var(--ink)}
+  .intro{padding:18px 0 32px}
+  .kicker{color:var(--gold);font-size:.95rem;letter-spacing:.04em;margin:0 0 8px}
+  .intro h1{font-size:clamp(2.8rem,7.5vw,4.4rem)}
+  .intro .lead{font-size:1.18rem;max-width:40em;margin:14px 0 26px}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 24px;margin:0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .facts dt{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .facts dd{margin:2px 0 0;font-weight:500}
+
+  /* reel */
+  .reel{margin:34px auto 0}
+  .reel .hero{width:100%;height:auto;display:block}
+  .reel video{width:100%;display:block;border-radius:6px;background:#000;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .reel p{color:var(--muted);font-size:.9rem;text-align:center;margin:10px 0 0}
+  .links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:22px 0 0}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line);border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500;font-size:.95rem;background:var(--card)}
+  .btn:hover{border-color:var(--gold);color:var(--ink)}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#1c1820}
+  .btn.primary:hover{background:#f3cf74;color:#1c1820}
+
+  /* story */
+  section{padding:44px 0;border-top:1px solid var(--line);margin-top:44px}
+  section + section{margin-top:0}
+  section h2{font-size:2rem;margin-bottom:16px}
+  section p{margin:0 0 14px}
+  figure{margin:26px 0 6px}
+  figure img{width:100%;height:auto;display:block;border-radius:4px;border:1px solid var(--line)}
+  figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .pair figure{margin-top:26px}
+  @media (max-width:640px){.pair{grid-template-columns:1fr}}
+  /* aged-paper pull quote, like the work cards */
+  .note{background:var(--paper);color:var(--paperInk);border-radius:3px;padding:18px 22px;margin:26px 0;box-shadow:0 10px 24px rgba(0,0,0,.35);
+    background-image:radial-gradient(ellipse at 20% 15%,rgba(120,80,30,.10),transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(120,80,30,.12),transparent 50%);
+    font-family:"Germania One",Georgia,serif;font-size:1.3rem;line-height:1.35}
+
+  .next{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+  footer{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--muted);font-size:.92rem;margin-top:44px}
+  footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
+  footer small{display:block;width:100%;font-size:.82rem;opacity:.8}
+
+
+  /* pull quotes: no box (so they don't read as cards or links), just a gold rule and display type */
+  .note{background:none;background-image:none;color:var(--ink);box-shadow:none;border-radius:0;border-left:3px solid var(--gold);padding:4px 0 4px 20px;margin:30px 0;font-size:1.45rem;line-height:1.3}
+</style>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/#play" aria-label="Matthew Szklarz — play the intro">
+      Matthew Szklarz
+    </a>
+    <nav class="top" aria-label="Site">
+      <a href="/work/#projects">Work</a>
+      <a href="/work/#skills">Skills</a>
+      <a href="/work/#experience">Experience</a>
+      <a class="play" href="/#play">▶ Play the intro</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap narrow">
+    <a class="back" href="/work/#projects">← Selected work</a>
+    <div class="intro">
+      <h1>Campaign CTAs</h1>
+      <p class="lead">A WordPress plugin that turns call-to-action banners into reusable content. Build a CTA once, drop it into any post, and change it in one place when the campaign changes. Posts without one still get the right CTA automatically.</p>
+      <dl class="facts">
+        <div><dt>Originally for</dt><dd>The Mendix blog</dd></div>
+        <div><dt>My role</dt><dd>Design and development</dd></div>
+        <div><dt>Built with</dt><dd>WordPress, PHP, block editor, JavaScript</dd></div>
+        <div><dt>Status</dt><dd>Still live on the Mendix blog</dd></div>
+        <div><dt>Now</dt><dd>Open source, rebuilt from scratch</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="reel">
+      <img class="hero" src="hero.webp" alt="A collage of eight call-to-action banners in dark, light and green styles, such as Get the Acme newsletter, Start your 14-day free trial and The 2026 State of Data report is here" width="1800" height="936">
+      <p>Eight CTAs from the demo site, all built from the same plugin.</p>
+      <div class="links">
+        <a class="btn primary" href="https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/matteszk/acme-demo-site/main/blueprint.json" target="_blank" rel="noopener">Try it live ↗</a>
+        <a class="btn" href="https://github.com/matteszk/campaign-ctas" target="_blank" rel="noopener">View on GitHub ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap narrow">
+    <section aria-labelledby="h-problem">
+      <h2 id="h-problem">The problem</h2>
+      <p>Every post on the Mendix blog ended with a call to action, pointing readers to a webinar, a report or a free trial. For a while, those were banner images: design made a new one for each promotion, and writers pasted it into their posts.</p>
+      <p>It didn't scale. Making a banner meant waiting on design, and the moment a campaign ended, every post with that banner was out of date. Fixing it meant finding and editing those posts one at a time, so mostly they just stayed stale.</p>
+      <p class="note">The real issue wasn't the banners. It was that every copy of a CTA lived inside a different post.</p>
+    </section>
+
+    <section aria-labelledby="h-content">
+      <h2 id="h-content">CTAs as content</h2>
+      <p>So I made CTAs their own kind of content. Each one has a heading, body text, a button and an optional image, styled by the site instead of drawn by hand. Writers could build one in a minute without waiting on design.</p>
+      <p>Posts don't copy a CTA; they point to it. Change the heading once and every post that uses it updates on the next page view, which is exactly what a marketing team wants when a campaign changes.</p>
+      <figure>
+        <img src="cta-edit.jpg" alt="The WordPress edit screen for a CTA called Guides: Free trial, with fields for heading, body, button text, button link and theme" width="1100" height="568" loading="lazy">
+        <figcaption>A CTA is a simple form, and its content lives in one place.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="h-fallback">
+      <h2 id="h-fallback">A fallback for every post</h2>
+      <p>Writers won&#8217;t remember to add a CTA to every post, and older posts had none at all. So each post gets one automatically, chosen in this order:</p>
+      <ol>
+        <li><strong>A CTA placed in the post</strong> always wins.</li>
+        <li>Otherwise, the <strong>default for the post's category</strong>.</li>
+        <li>Otherwise, the <strong>site-wide default</strong>.</li>
+      </ol>
+      <p>At Mendix, the defaults followed the reader's stage: someone reading a beginner's guide got something different from an existing customer. One setting could quietly update the CTA on every older post in a category.</p>
+      <div class="pair">
+        <figure>
+          <img src="category-default.jpg" alt="The Edit Category screen for Guides, with a Default CTA dropdown set to Guides: Free trial" width="1100" height="643" loading="lazy">
+          <figcaption>Each category gets its own default.</figcaption>
+        </figure>
+        <figure>
+          <img src="fallback-front.jpg" alt="The end of a Guides post with a green Try what you just read about CTA and a Start free trial button" width="1100" height="545" loading="lazy">
+          <figcaption>A Guides post with no CTA picks up the Guides default.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-still">
+      <h2 id="h-still">Still running</h2>
+      <p>Years later, the system is still how the Mendix blog does it. Posts published in October 2026, like <a href="https://www.mendix.com/blog/want-more-ai-value-from-agents-start-with-your-foundation/" target="_blank" rel="noopener">this one on AI agents</a>, end with a centrally managed CTA (currently <em>Uniting the Human-AI Workforce</em>). Its companion plugin, the &#8220;Further reading&#8221; card, <a href="https://github.com/matteszk/read-next-card" target="_blank" rel="noopener">is still there too</a>.</p>
+      <p>I sampled 100 posts from across the blog&#8217;s archive, some of them years old. Every one ends with a CTA, and three different campaigns are running at once:</p>
+      <figure>
+        <img src="mendix-live-cta-maia.webp" alt="A dark navy CTA headed Transform Development with AI, with a Maia logo and an Explore AI at Mendix button" width="1100" height="462" loading="lazy">
+      </figure>
+      <figure>
+        <img src="mendix-live-cta.webp" alt="A dark navy CTA headed Uniting the Human-AI Workforce, with a robot icon and a Watch on-demand webinar button" width="1100" height="434" loading="lazy">
+      </figure>
+      <figure>
+        <img src="mendix-live-cta-industrial.webp" alt="A dark navy CTA headed How to Gain Industrial Agility, with a report cover and a Learn more button" width="1100" height="418" loading="lazy">
+        <figcaption>Three live campaigns on mendix.com/blog, November 2026: on 47, 30 and 23 of 100 sampled posts.</figcaption>
+      </figure>
+      <p class="note">The best sign a content tool works: the team keeps using it long after you&#8217;ve left.</p>
+    </section>
+
+    <section aria-labelledby="h-rebuild">
+      <h2 id="h-rebuild">Rebuilding it</h2>
+      <p>The original was written for the classic editor: a shortcode with a dropdown button in the toolbar, fields built with Advanced Custom Fields, and markup tied to our theme. It did the job, but it couldn't live anywhere else.</p>
+      <p>The open-source version is a from-scratch rebuild for today's WordPress:</p>
+      <ul>
+        <li><strong>A block instead of a shortcode,</strong> with a CTA picker and a live preview right in the editor.</li>
+        <li><strong>Native post meta instead of ACF,</strong> so there's nothing else to install.</li>
+        <li><strong>Any taxonomy for fallbacks,</strong> not just the one we used, plus the site-wide default.</li>
+        <li><strong>Self-contained styles</strong> with simple class names, so any theme can restyle it.</li>
+      </ul>
+      <figure>
+        <img src="block-editor.jpg" alt="The block editor with a CTA block selected, showing a Choose a CTA dropdown above a live preview of the 2026 State of Data report CTA" width="1100" height="707" loading="lazy">
+        <figcaption>Writers pick a CTA from a dropdown and see it exactly as readers will.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="h-next">
+      <h2 id="h-next">What I'd add next</h2>
+      <p>When a post has several categories with defaults, the first one alphabetically wins today. Supporting a "primary category," like the ones SEO plugins add, would make that choice deliberate. I'd also let fallbacks apply to pages and custom post types.</p>
+      <p>To try it, open the live demo above. It's a full WordPress site in your browser, logged in, with sample posts showing every rule.</p>
+      <div class="next" style="margin-top:26px">
+        <a class="btn primary" href="/work/hals-big-dig/">Next: Hal's Big Dig →</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Matthew Szklarz</span>
+    <span><a href="mailto:mszklarz@gmail.com">Email</a> · <a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a></span>
+  </div>
+</footer>
+</body>
+</html>
