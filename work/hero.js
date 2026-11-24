@@ -84,10 +84,10 @@
   const rockM = M('#4c4852');
   // the invisible clearing the goat can wander: a wide, shallow oval
   const RING = { x: 1.22, z: .2, rx: 8.1, rz: 5.3 };
-  // edge markers for the clickable clearing: a stump on its right edge, a little ring of mushrooms on its left
-  { const sx = RING.x + RING.rx, sz = RING.z; S.add(mk(new THREE.CylinderGeometry(.45, .55, .5, 7), trunkM, sx, groundY(sx, sz) + .25, sz));
-    const capM = M('#b8322a'), dotM = M('#efe6d2'), stemM2 = M('#e6dcc6'), mx = RING.x - RING.rx, mz = RING.z;
-    [[0, 0, 1], [.45, .3, .7], [-.3, .42, .55], [.15, -.42, .6]].forEach(([dx, dz, sc]) => {
+    // brown mushroom clusters on both edges of the clickable clearing (brown, so they don't read as apples)
+  { const capM = M('#7a5236'), dotM = M('#c9b48f'), stemM2 = M('#e0d4bc');
+    for (const [mx, mz, f] of [[RING.x - RING.rx, RING.z, 1], [RING.x + RING.rx, RING.z, -1]])
+    [[0, 0, 1], [.45 * f, .3, .7], [-.3 * f, .42, .55], [.15 * f, -.42, .6]].forEach(([dx, dz, sc]) => {
       const x = mx + dx, z = mz + dz, g = groundY(x, z), m = new THREE.Group(); m.position.set(x, g, z); m.scale.setScalar(sc); m.rotation.y = dx * 4;
       m.add(mk(new THREE.CylinderGeometry(.09, .12, .42, 6), stemM2, 0, .21, 0));
       const cap = new THREE.Mesh(new THREE.SphereGeometry(.32, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), capM); cap.position.y = .38; cap.scale.y = .75; m.add(cap);
