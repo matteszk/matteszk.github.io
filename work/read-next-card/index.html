@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Read Next Card — Matthew Szklarz, Frontend Developer</title>
+<meta name="description" content="Case study: Read Next Card, a WordPress block that adds a Further reading card linking to a chosen or automatically related post. Originally built at Mendix, rebuilt as an open-source plugin.">
+<meta property="og:title" content="Read Next Card — Matthew Szklarz">
+<meta property="og:description" content="A Further reading card for WordPress posts that can pick the most related post on its own.">
+<meta property="og:image" content="https://matthewszklarz.com/work/read-next-card/hero-og.jpg">
+<meta name="theme-color" content="#1c1820">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 10.5 10 8.6 4.6 12.4 4 19.6l3.6 7.2 5.6 2.6 2.8-1.2 2.8 1.2 5.6-2.6 3.6-7.2-.6-7.2L22 8.6z' fill='%23b51f24'/%3E%3Cpath d='M16 10.5 10 8.6 4.6 12.4 4 19.6l5.4-2.4 3.4-5.4z' fill='%23e8453a'/%3E%3Cpath d='M16 10.5l-3.2 1.3-3.4 5.4L16 19l6.6-1.8-3.4-5.4z' fill='%23d42a2a'/%3E%3Cpath d='M4 19.6l3.6 7.2 5.6 2.6L16 19l-6.6-1.8z' fill='%23d42a2a'/%3E%3Cpath d='M16 10.5l3.2 1.3 3.4 5.4 5.4 2.4-.6-7.2L22 8.6z' fill='%23d42a2a'/%3E%3Cpath d='M15.2 10.8 15.6 4h1.8l-.6 6.8z' fill='%234a3020'/%3E%3Cpath d='M16.8 6.6c1.6-2.6 4.6-3.4 7-2.4-1.4 2.6-4.4 3.6-7 2.4z' fill='%235c8a32'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Germania+One&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1c1820; --bg2:#25202a; --card:#2b2530; --line:#3e3546;
+    --ink:#f1e8d2; --muted:#b9ad98; --gold:#e7b84a; --red:#d42a2e;
+    --paper:#e9dfc4; --paperInk:#2a1e14;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--gold);text-underline-offset:3px}
+  a:hover{color:#f3cf74}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:3px}
+  h1,h2,h3{font-family:"Germania One",Georgia,serif;font-weight:400;line-height:1.15;margin:0;letter-spacing:.01em}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  .narrow{max-width:720px}
+  .skip{position:absolute;left:-999px;top:8px;background:var(--gold);color:#1c1820;padding:8px 12px;border-radius:4px;z-index:10}
+  .skip:focus{left:8px}
+
+  /* header (matches /work) */
+  header.top{border-bottom:1px solid var(--line);background:var(--bg2)}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:"Germania One",Georgia,serif;font-size:1.15rem}
+  .brand svg{width:28px;height:28px;flex:none}
+  nav.top a{color:var(--muted);text-decoration:none;font-size:.92rem;margin-left:20px}
+  nav.top a:hover{color:var(--ink)}
+  nav.top a.play{color:var(--gold)}
+  @media (max-width:640px){nav.top a:not(.play){display:none}}
+
+  /* intro */
+  .back{display:inline-block;margin-top:36px;color:var(--muted);text-decoration:none;font-size:.92rem}
+  .back:hover{color:var(--ink)}
+  .intro{padding:18px 0 32px}
+  .kicker{color:var(--gold);font-size:.95rem;letter-spacing:.04em;margin:0 0 8px}
+  .intro h1{font-size:clamp(2.8rem,7.5vw,4.4rem)}
+  .intro .lead{font-size:1.18rem;max-width:40em;margin:14px 0 26px}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 24px;margin:0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .facts dt{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .facts dd{margin:2px 0 0;font-weight:500}
+
+  /* reel */
+  .reel{margin:34px auto 0}
+  .reel .hero{width:100%;height:auto;display:block}
+  .reel video{width:100%;display:block;border-radius:6px;background:#000;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .reel p{color:var(--muted);font-size:.9rem;text-align:center;margin:10px 0 0}
+  .links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:22px 0 0}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line);border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500;font-size:.95rem;background:var(--card)}
+  .btn:hover{border-color:var(--gold);color:var(--ink)}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#1c1820}
+  .btn.primary:hover{background:#f3cf74;color:#1c1820}
+
+  /* story */
+  section{padding:44px 0;border-top:1px solid var(--line);margin-top:44px}
+  section + section{margin-top:0}
+  section h2{font-size:2rem;margin-bottom:16px}
+  section p{margin:0 0 14px}
+  figure{margin:26px 0 6px}
+  figure img{width:100%;height:auto;display:block;border-radius:4px;border:1px solid var(--line)}
+  figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .pair figure{margin-top:26px}
+  @media (max-width:640px){.pair{grid-template-columns:1fr}}
+  /* aged-paper pull quote, like the work cards */
+  .note{background:var(--paper);color:var(--paperInk);border-radius:3px;padding:18px 22px;margin:26px 0;box-shadow:0 10px 24px rgba(0,0,0,.35);
+    background-image:radial-gradient(ellipse at 20% 15%,rgba(120,80,30,.10),transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(120,80,30,.12),transparent 50%);
+    font-family:"Germania One",Georgia,serif;font-size:1.3rem;line-height:1.35}
+
+  .next{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+  footer{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--muted);font-size:.92rem;margin-top:44px}
+  footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
+  footer small{display:block;width:100%;font-size:.82rem;opacity:.8}
+
+
+  /* pull quotes: no box (so they don't read as cards or links), just a gold rule and display type */
+  .note{background:none;background-image:none;color:var(--ink);box-shadow:none;border-radius:0;border-left:3px solid var(--gold);padding:4px 0 4px 20px;margin:30px 0;font-size:1.45rem;line-height:1.3}
+</style>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/#play" aria-label="Matthew Szklarz — play the intro">
+      Matthew Szklarz
+    </a>
+    <nav class="top" aria-label="Site">
+      <a href="/work/#projects">Work</a>
+      <a href="/work/#skills">Skills</a>
+      <a href="/work/#experience">Experience</a>
+      <a class="play" href="/#play">▶ Play the intro</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap narrow">
+    <a class="back" href="/work/#projects">← Selected work</a>
+    <div class="intro">
+      <h1>Read Next Card</h1>
+      <p class="lead">A WordPress block that turns an internal link into a &#8220;Further reading&#8221; card. Pick the post yourself, or leave it on Automatic and the block finds the most closely related article for you.</p>
+      <dl class="facts">
+        <div><dt>Originally for</dt><dd>The Mendix blog</dd></div>
+        <div><dt>My role</dt><dd>Design and development</dd></div>
+        <div><dt>Built with</dt><dd>WordPress, PHP, block editor, JavaScript</dd></div>
+        <div><dt>Status</dt><dd>Still live on the Mendix blog</dd></div>
+        <div><dt>Now</dt><dd>Open source, rebuilt with an Automatic mode</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="reel">
+      <img class="hero" src="hero.webp" alt="A collage of eight Further reading cards, each with an illustration and a post title such as 5 dashboard mistakes to avoid and How Northline Retail rebuilt their reporting" width="1800" height="642">
+      <p>Eight cards from the demo site, all from the same block.</p>
+      <div class="links">
+        <a class="btn primary" href="https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/matteszk/acme-demo-site/main/blueprint.json" target="_blank" rel="noopener">Try it live ↗</a>
+        <a class="btn" href="https://github.com/matteszk/read-next-card" target="_blank" rel="noopener">View on GitHub ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap narrow">
+    <section aria-labelledby="h-problem">
+      <h2 id="h-problem">The problem</h2>
+      <p>Good blogs keep readers moving from one article to the next. But a plain text link in the middle of a paragraph is easy to skim past, and writers rarely stopped to add one.</p>
+      <p>The Mendix blog needed a way to point readers to a related article that actually looked like an invitation: an image, a clear label and the article&#8217;s title, without asking writers to design anything.</p>
+      <p class="note">An internal link should look like something you&#8217;d want to click.</p>
+    </section>
+
+    <section aria-labelledby="h-card">
+      <h2 id="h-card">A card that stays current</h2>
+      <p>The card pulls everything from the post it links to: the featured image, the title, the link. The writer only chooses which post. If that article is renamed or gets a new image later, every card pointing to it updates on its own.</p>
+      <p>Long titles are trimmed to twelve words, so the card stays a consistent size wherever it appears.</p>
+      <figure>
+        <img src="automatic-chart.webp" alt="A Further reading card in the middle of an article, linking to 5 dashboard mistakes to avoid" width="1100" height="764" loading="lazy">
+        <figcaption>A card placed between two sections of an article.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="h-auto">
+      <h2 id="h-auto">Automatic mode</h2>
+      <p>The original version needed the writer to choose a post every time. For the rebuild, I added an <strong>Automatic</strong> option that picks one for them:</p>
+      <ol>
+        <li>Look at the current post&#8217;s categories and tags.</li>
+        <li>Fetch recent posts that share at least one of them.</li>
+        <li>Score each one: a point for every category and tag in common.</li>
+        <li>Show the highest score, with the newest post winning a tie.</li>
+      </ol>
+      <p>If nothing matches, the block shows nothing rather than a random link. A writer can still override it with a specific post at any time.</p>
+      <div class="pair">
+        <figure>
+          <img src="linked-post-sidebar.webp" alt="The block sidebar with a Linked post dropdown set to Automatic (most related)" width="560" height="700" loading="lazy">
+          <figcaption>Writers choose a post, or leave it on Automatic.</figcaption>
+        </figure>
+        <figure>
+          <img src="automatic-missing-data.webp" alt="A Further reading card in a post about missing data, automatically linking to Removing duplicate records with SQL" width="1100" height="721" loading="lazy">
+          <figcaption>A post about missing data automatically links to one about duplicate records: both are Guides about data quality.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-still">
+      <h2 id="h-still">Still running</h2>
+      <p>The original is still in use on the Mendix blog. In the same 100-post sample I used for <a href="/work/campaign-ctas/">Campaign CTAs</a>, 20 posts had Further reading cards, 36 cards in all, with up to four in a single article.</p>
+      <figure>
+        <img src="mendix-live-further-reading.webp" alt="A Further reading card on the Mendix blog linking to Avoid Deploying Your Agents into Chaos with an Orchestration Layer" width="1100" height="248" loading="lazy">
+        <figcaption>A Further reading card on mendix.com/blog, October 2026.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="h-rebuild">
+      <h2 id="h-rebuild">Rebuilding it</h2>
+      <p>The original was a shortcode, <code>[related_content id=123]</code>, with markup that depended on our theme. I rebuilt it from scratch as a block:</p>
+      <ul>
+        <li><strong>A block instead of a shortcode,</strong> with a post picker and a live preview in the editor.</li>
+        <li><strong>Automatic mode,</strong> so every post can have a useful link without extra work.</li>
+        <li><strong>Self-contained styles</strong> registered through <code>block.json</code>, so the card looks the same in the editor and on the page, and any theme can restyle it.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-next">
+      <h2 id="h-next">What I'd add next</h2>
+      <p>Automatic only looks at categories and tags, and only at the 20 most recent matches, which keeps it fast but can miss an older, closer article. Caching each post&#8217;s match and scoring a wider pool in the background would fix both.</p>
+      <p>To try it, open the live demo above and edit any post that has a card.</p>
+      <div class="next" style="margin-top:26px">
+        <a class="btn primary" href="/work/hals-big-dig/">Next: Hal's Big Dig →</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Matthew Szklarz</span>
+    <span><a href="mailto:mszklarz@gmail.com">Email</a> · <a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a></span>
+  </div>
+</footer>
+</body>
+</html>
