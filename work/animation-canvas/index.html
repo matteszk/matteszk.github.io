@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homepage animations — Matthew Szklarz, Frontend Developer</title>
+<meta name="description" content="Case study: canvas animations Matthew Szklarz designed and built for the mendix.com homepage, and AnimationCanvas, the open-source helper behind them.">
+<meta property="og:title" content="Homepage animations — Matthew Szklarz">
+<meta property="og:description" content="Canvas animations for the mendix.com homepage, rebuilt as live demos with an open-source helper library.">
+<meta property="og:image" content="https://matthewszklarz.com/work/animation-canvas/og.jpg">
+<meta name="theme-color" content="#1c1820">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 10.5 10 8.6 4.6 12.4 4 19.6l3.6 7.2 5.6 2.6 2.8-1.2 2.8 1.2 5.6-2.6 3.6-7.2-.6-7.2L22 8.6z' fill='%23b51f24'/%3E%3Cpath d='M16 10.5 10 8.6 4.6 12.4 4 19.6l5.4-2.4 3.4-5.4z' fill='%23e8453a'/%3E%3Cpath d='M16 10.5l-3.2 1.3-3.4 5.4L16 19l6.6-1.8-3.4-5.4z' fill='%23d42a2a'/%3E%3Cpath d='M4 19.6l3.6 7.2 5.6 2.6L16 19l-6.6-1.8z' fill='%23d42a2a'/%3E%3Cpath d='M16 10.5l3.2 1.3 3.4 5.4 5.4 2.4-.6-7.2L22 8.6z' fill='%23d42a2a'/%3E%3Cpath d='M15.2 10.8 15.6 4h1.8l-.6 6.8z' fill='%234a3020'/%3E%3Cpath d='M16.8 6.6c1.6-2.6 4.6-3.4 7-2.4-1.4 2.6-4.4 3.6-7 2.4z' fill='%235c8a32'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Germania+One&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1c1820; --bg2:#25202a; --card:#2b2530; --line:#3e3546;
+    --ink:#f1e8d2; --muted:#b9ad98; --gold:#e7b84a; --red:#d42a2e;
+    --paper:#e9dfc4; --paperInk:#2a1e14;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--gold);text-underline-offset:3px}
+  a:hover{color:#f3cf74}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:3px}
+  h1,h2,h3{font-family:"Germania One",Georgia,serif;font-weight:400;line-height:1.15;margin:0;letter-spacing:.01em}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  .narrow{max-width:720px}
+  .skip{position:absolute;left:-999px;top:8px;background:var(--gold);color:#1c1820;padding:8px 12px;border-radius:4px;z-index:10}
+  .skip:focus{left:8px}
+
+  /* header (matches /work) */
+  header.top{border-bottom:1px solid var(--line);background:var(--bg2)}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:"Germania One",Georgia,serif;font-size:1.15rem}
+  .brand svg{width:28px;height:28px;flex:none}
+  nav.top a{color:var(--muted);text-decoration:none;font-size:.92rem;margin-left:20px}
+  nav.top a:hover{color:var(--ink)}
+  nav.top a.play{color:var(--gold)}
+  @media (max-width:640px){nav.top a:not(.play){display:none}}
+
+  /* intro */
+  .back{display:inline-block;margin-top:36px;color:var(--muted);text-decoration:none;font-size:.92rem}
+  .back:hover{color:var(--ink)}
+  .intro{padding:18px 0 32px}
+  .kicker{color:var(--gold);font-size:.95rem;letter-spacing:.04em;margin:0 0 8px}
+  .intro h1{font-size:clamp(2.8rem,7.5vw,4.4rem)}
+  .intro .lead{font-size:1.18rem;max-width:40em;margin:14px 0 26px}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 24px;margin:0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .facts dt{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .facts dd{margin:2px 0 0;font-weight:500}
+
+  /* reel */
+  .reel{margin:34px auto 0}
+  .reel video{width:100%;display:block;border-radius:6px;background:#000;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .reel p{color:var(--muted);font-size:.9rem;text-align:center;margin:10px 0 0}
+  .links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:22px 0 0}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line);border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500;font-size:.95rem;background:var(--card)}
+  .btn:hover{border-color:var(--gold);color:var(--ink)}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#1c1820}
+  .btn.primary:hover{background:#f3cf74;color:#1c1820}
+
+  /* story */
+  section{padding:44px 0;border-top:1px solid var(--line);margin-top:44px}
+  section + section{margin-top:0}
+  section h2{font-size:2rem;margin-bottom:16px}
+  section p{margin:0 0 14px}
+  figure{margin:26px 0 6px}
+  figure img{width:100%;height:auto;display:block;border-radius:4px;border:1px solid var(--line)}
+  figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .pair figure{margin-top:26px}
+  @media (max-width:640px){.pair{grid-template-columns:1fr}}
+  /* aged-paper pull quote, like the work cards */
+  .note{background:var(--paper);color:var(--paperInk);border-radius:3px;padding:18px 22px;margin:26px 0;box-shadow:0 10px 24px rgba(0,0,0,.35);
+    background-image:radial-gradient(ellipse at 20% 15%,rgba(120,80,30,.10),transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(120,80,30,.12),transparent 50%);
+    font-family:"Germania One",Georgia,serif;font-size:1.3rem;line-height:1.35}
+
+  .next{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+  footer{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--muted);font-size:.92rem;margin-top:44px}
+  footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
+  footer small{display:block;width:100%;font-size:.82rem;opacity:.8}
+
+
+  /* pull quotes: no box (so they don't read as cards or links), just a gold rule and display type */
+  .note{background:none;background-image:none;color:var(--ink);box-shadow:none;border-radius:0;border-left:3px solid var(--gold);padding:4px 0 4px 20px;margin:30px 0;font-size:1.45rem;line-height:1.3}
+
+  /* live demos */
+  .stage{margin:26px 0 6px}
+  .stage canvas{display:block;width:100%;border-radius:6px;border:1px solid var(--line);background:#1e1b26;touch-action:none}
+  .stage .tall{height:440px}
+  .stage .mid{height:320px}
+  .stage figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .hint{color:var(--gold)}
+  @media (max-width:640px){.stage .tall{height:340px}.stage .mid{height:260px}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/#play" aria-label="Matthew Szklarz — play the intro">
+      Matthew Szklarz
+    </a>
+    <nav class="top" aria-label="Site">
+      <a href="/work/#projects">Work</a>
+      <a href="/work/#skills">Skills</a>
+      <a href="/work/#experience">Experience</a>
+      <a class="play" href="/#play">▶ Play the intro</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap narrow">
+    <a class="back" href="/work/#projects">← Selected work</a>
+    <div class="intro">
+      <h1>Homepage animations</h1>
+      <p class="lead">The design team handed me static comps for the 2025 mendix.com homepage. I pitched motion for them, then built it: a set of canvas animations, all running on one small helper I wrote to handle the plumbing.</p>
+      <dl class="facts">
+        <div><dt>For</dt><dd>The mendix.com homepage, 2025</dd></div>
+        <div><dt>My role</dt><dd>Animation concepts and development</dd></div>
+        <div><dt>Built with</dt><dd>JavaScript, Canvas 2D</dd></div>
+        <div><dt>Now</dt><dd>Open-source library with live demos</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <figure class="stage">
+      <canvas id="hub" class="tall" aria-label="A central hub with rings pulsing outward and six connected service icons orbiting it"></canvas>
+      <figcaption>Live, not a video. <span class="hint">Click it</span> to send a pulse.</figcaption>
+    </figure>
+    <div class="links">
+      <a class="btn primary" href="https://matteszk.github.io/animation-canvas/demo/" target="_blank" rel="noopener">All the demos ↗</a>
+      <a class="btn" href="https://github.com/matteszk/animation-canvas" target="_blank" rel="noopener">View on GitHub ↗</a>
+    </div>
+  </div>
+
+  <div class="wrap narrow">
+    <section aria-labelledby="h-comps">
+      <h2 id="h-comps">From static comps to motion</h2>
+      <p>The homepage redesign came to me as flat, polished comps: a starry hero, a partner section, an integrations row, a wall of customer logos. They looked great standing still. My job was to build them, and I saw a chance to make each section feel alive without getting in the way of the message.</p>
+      <p>So for each section I came up with a small idea that matched what it was saying. Partners became a hub with rings pulsing out to connected services. Integrations became a conveyor belt of apps plugging in one at a time. The hero&#8217;s stars started streaming toward you.</p>
+      <p class="note">Every animation had to earn its place by saying the same thing as the copy next to it.</p>
+    </section>
+
+    <section aria-labelledby="h-belt">
+      <h2 id="h-belt">Apps plugging in</h2>
+      <p>For the integrations section, a belt of apps steps along every two seconds. As each one lands under the connector, the hub card above bumps and glows, as if it just took the connection. Clicking cycles the color theme.</p>
+      <figure class="stage">
+        <canvas id="belt" class="mid" aria-label="A belt of app cards stepping past a central hub card that bumps as each one connects"></canvas>
+        <figcaption>The conveyor belt, live. <span class="hint">Click</span> to change the theme.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="h-stars">
+      <h2 id="h-stars">A hero you can steer</h2>
+      <p>The hero&#8217;s starfield streams out from the center. Moving your pointer up speeds it up, and moving down slows it to a drift: a small reward for anyone who plays with it, invisible to everyone else.</p>
+      <figure class="stage">
+        <canvas id="warp" class="mid" aria-label="Animated star field streaming from the center"></canvas>
+        <figcaption>The warp field, live. <span class="hint">Move your pointer</span> up and down.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="h-helper">
+      <h2 id="h-helper">One helper for every canvas</h2>
+      <p>With several canvases on one page, the same chores kept coming up: sizing each one to its container, keeping it sharp on Retina screens, running a frame loop, and loading images first. So I wrote a small class to handle them once, and every animation was built on top of it.</p>
+      <p>It also handled the parts that are easy to forget:</p>
+      <ul>
+        <li><strong>Performance.</strong> Animations stop running when they scroll off-screen or the tab is hidden, so a long page doesn&#8217;t burn battery on things nobody can see.</li>
+        <li><strong>Accessibility.</strong> With reduced motion turned on, each canvas draws a single composed still frame instead of animating.</li>
+        <li><strong>Consistency.</strong> Every animation got timing, sizing and pointer input the same way, which made new ones quick to build.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-rebuild">
+      <h2 id="h-rebuild">Rebuilding it</h2>
+      <p>The homepage has since been redesigned, so these animations live on here as rebuilds. I rewrote the helper from scratch as <a href="https://github.com/matteszk/animation-canvas" target="_blank" rel="noopener">AnimationCanvas</a>, a dependency-free library of about 1.6 KB, and recreated the animations as demos with generic icons in place of partner and customer logos.</p>
+      <ul>
+        <li><strong>Clock-driven, not timer-driven.</strong> The originals chained <code>setTimeout</code>s; the rebuilds work out every step, ease and bump from the animation clock, so they pause and resume cleanly.</li>
+        <li><strong>Sized by the element,</strong> using ResizeObserver, so they work in any layout, not just full-width sections.</li>
+        <li><strong>Live reduced motion,</strong> so turning the setting on mid-visit freezes them right away.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-next">
+      <h2 id="h-next">What I&#8217;d add next</h2>
+      <p>For heavier scenes, I&#8217;d move drawing into a web worker with OffscreenCanvas, so animation never competes with the rest of the page for the main thread.</p>
+      <div class="next" style="margin-top:26px">
+        <a class="btn primary" href="/work/campaign-ctas/">Next: Campaign CTAs →</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Matthew Szklarz</span>
+    <span><a href="mailto:mszklarz@gmail.com">Email</a> · <a href="https://www.linkedin.com/in/matthew-szklarz">LinkedIn</a> · <a href="https://github.com/matteszk">GitHub</a></span>
+  </div>
+</footer>
+<script type="module">
+import { AnimationCanvas } from './animation-canvas.js';
+
+const COLORS = ['#e7b84a', '#e06a4e', '#7fc4b8', '#a78bfa', '#f1ece2'];
+const anims = {};
+
+// --- Hub and spokes -----------------------------------------------------
+{
+	const RING_GAP = 20;
+	const BASE_SPIN = 0.00004; // radians per ms
+	let rings = 0;
+	let spin = BASE_SPIN;
+	let angle = 0;
+	let pulseAt = -Infinity; // time the current pulse started
+	let nextPulse = 2000;
+	let now = 0; // latest frame time, so clicks can start a pulse "now"
+
+	// Six service icons, each drawn around (0, 0) at roughly 24px.
+	const icons = [
+		(c) => { // database
+			c.beginPath(); c.ellipse(0, -8, 10, 4, 0, 0, Math.PI * 2); c.stroke();
+			c.beginPath(); c.moveTo(-10, -8); c.lineTo(-10, 8); c.ellipse(0, 8, 10, 4, 0, Math.PI, 0, true); c.lineTo(10, -8); c.stroke();
+			c.beginPath(); c.ellipse(0, 0, 10, 4, 0, 0, Math.PI); c.stroke();
+		},
+		(c) => { // cloud
+			c.beginPath();
+			c.arc(-6, 2, 6, Math.PI * 0.5, Math.PI * 1.5);
+			c.arc(0, -4, 8, Math.PI, Math.PI * 2);
+			c.arc(7, 2, 6, Math.PI * 1.5, Math.PI * 0.5);
+			c.closePath(); c.stroke();
+		},
+		(c) => { // gear
+			c.beginPath();
+			for (let i = 0; i < 16; i++) {
+				const r = i % 2 ? 7 : 11, a = (i / 16) * Math.PI * 2;
+				c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+			}
+			c.closePath(); c.stroke();
+			c.beginPath(); c.arc(0, 0, 3.5, 0, Math.PI * 2); c.stroke();
+		},
+		(c) => { // chat bubble
+			c.beginPath(); c.roundRect(-11, -9, 22, 15, 4); c.stroke();
+			c.beginPath(); c.moveTo(-4, 6); c.lineTo(-7, 11); c.lineTo(1, 6); c.stroke();
+		},
+		(c) => { // bar chart
+			c.beginPath(); c.moveTo(-11, 10); c.lineTo(11, 10); c.stroke();
+			[[-8, 4], [-2, -4], [4, -9]].forEach(([x, top]) => c.strokeRect(x, top, 4, 10 - top));
+		},
+		(c) => { // lock
+			c.beginPath(); c.roundRect(-9, -2, 18, 13, 3); c.stroke();
+			c.beginPath(); c.arc(0, -3, 6, Math.PI, 0); c.lineTo(6, -2); c.moveTo(-6, -3); c.lineTo(-6, -2); c.stroke();
+			c.beginPath(); c.arc(0, 4, 1.6, 0, Math.PI * 2); c.fill();
+		},
+	];
+
+	const sizes = ({ width, height }) => {
+		const short = Math.min(width, height);
+		return { hub: Math.max(26, short * 0.1), spoke: short * 0.36, node: Math.max(20, short * 0.075) };
+	};
+
+	const circle = (ctx, x, y, r, stroke) => {
+		ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+		ctx.fillStyle = '#1e1b26'; ctx.fill();
+		ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke();
+	};
+
+	anims.hub = new AnimationCanvas('#hub', {
+		setup({ width, height }) {
+			rings = Math.ceil(Math.hypot(width, height) / 2 / RING_GAP);
+		},
+		resize({ width, height }) {
+			rings = Math.ceil(Math.hypot(width, height) / 2 / RING_GAP);
+		},
+		draw({ ctx, width, height, time, delta, animated }) {
+			const cx = width / 2, cy = height / 2;
+			const s = sizes({ width, height });
+			now = time;
+
+			// Pulse every 3 to 6 seconds.
+			if (animated && time >= nextPulse) {
+				pulseAt = time;
+				nextPulse = time + 3000 + Math.random() * 3000;
+			}
+
+			// Ease the spin back down after a click.
+			spin += (BASE_SPIN - spin) * Math.min(1, delta * 0.002);
+			angle += spin * delta;
+
+			ctx.clearRect(0, 0, width, height);
+
+			// Rings: fainter further out, brighter where the pulse's wavefront is.
+			const front = (time - pulseAt) * 0.35 + s.hub; // px from center
+			for (let i = 1; i <= rings; i++) {
+				const r = s.hub + i * RING_GAP;
+				const base = Math.max(0, 0.5 - i * 0.025);
+				const boost = Math.max(0, 1 - Math.abs(r - front) / 60) * 0.5;
+				ctx.strokeStyle = `rgba(224, 106, 78, ${base + boost})`;
+				ctx.lineWidth = 1;
+				ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+			}
+
+			// Spokes and service nodes.
+			icons.forEach((drawIcon, i) => {
+				const a = angle + (i / icons.length) * Math.PI * 2;
+				const x = cx + Math.cos(a) * s.spoke, y = cy + Math.sin(a) * s.spoke;
+				ctx.strokeStyle = 'rgba(231, 184, 74, 0.6)'; ctx.lineWidth = 1;
+				ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
+				circle(ctx, x, y, s.node, '#e7b84a');
+				ctx.save();
+				ctx.translate(x, y); ctx.scale(s.node / 24, s.node / 24);
+				ctx.strokeStyle = ctx.fillStyle = '#f1ece2'; ctx.lineWidth = 1.6; ctx.lineJoin = ctx.lineCap = 'round';
+				drawIcon(ctx);
+				ctx.restore();
+			});
+
+			// The hub: a four-point spark.
+			circle(ctx, cx, cy, s.hub, '#e06a4e');
+			ctx.fillStyle = '#e7b84a';
+			ctx.beginPath();
+			const k = s.hub * 0.55;
+			ctx.moveTo(cx, cy - k);
+			ctx.quadraticCurveTo(cx, cy, cx + k, cy);
+			ctx.quadraticCurveTo(cx, cy, cx, cy + k);
+			ctx.quadraticCurveTo(cx, cy, cx - k, cy);
+			ctx.quadraticCurveTo(cx, cy, cx, cy - k);
+			ctx.fill();
+		},
+	});
+
+	// Click: spin up and send a pulse right away.
+	anims.hub.canvas.addEventListener('pointerdown', () => {
+		spin = Math.min(spin + 0.0012, 0.003);
+		pulseAt = now;
+		nextPulse = now + 3000 + Math.random() * 3000;
+	});
+}
+
+// --- Conveyor belt -----------------------------------------------------
+{
+	const STEP = 2000; // ms between moves
+	const MOVE = 1200; // ms each move takes
+	const THEMES = ['#e7b84a', '#7fc4b8', '#e06a4e', '#a78bfa'];
+	let theme = 0;
+
+	// Six app icons, drawn around (0, 0) at roughly 24px.
+	const icons = [
+		(c) => { // plug
+			c.beginPath(); c.moveTo(-4, -11); c.lineTo(-4, -5); c.moveTo(4, -11); c.lineTo(4, -5); c.stroke();
+			c.beginPath(); c.moveTo(-8, -5); c.lineTo(8, -5); c.lineTo(8, 1); c.quadraticCurveTo(8, 6, 0, 6); c.quadraticCurveTo(-8, 6, -8, 1); c.closePath(); c.stroke();
+			c.beginPath(); c.moveTo(0, 6); c.lineTo(0, 11); c.stroke();
+		},
+		(c) => { // mail
+			c.beginPath(); c.roundRect(-11, -8, 22, 16, 3); c.stroke();
+			c.beginPath(); c.moveTo(-10, -6); c.lineTo(0, 2); c.lineTo(10, -6); c.stroke();
+		},
+		(c) => { // calendar
+			c.beginPath(); c.roundRect(-10, -8, 20, 18, 3); c.stroke();
+			c.beginPath(); c.moveTo(-10, -2); c.lineTo(10, -2); c.moveTo(-5, -11); c.lineTo(-5, -6); c.moveTo(5, -11); c.lineTo(5, -6); c.stroke();
+			[[-5, 3], [0, 3], [5, 3]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 1.3, 0, Math.PI * 2); c.fill(); });
+		},
+		(c) => { // cart
+			c.beginPath(); c.moveTo(-12, -9); c.lineTo(-8, -9); c.lineTo(-5, 4); c.lineTo(8, 4); c.lineTo(11, -5); c.lineTo(-7, -5); c.stroke();
+			[[-3, 9], [7, 9]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 2, 0, Math.PI * 2); c.stroke(); });
+		},
+		(c) => { // user
+			c.beginPath(); c.arc(0, -5, 5, 0, Math.PI * 2); c.stroke();
+			c.beginPath(); c.moveTo(-10, 11); c.quadraticCurveTo(-10, 2, 0, 2); c.quadraticCurveTo(10, 2, 10, 11); c.stroke();
+		},
+		(c) => { // document
+			c.beginPath(); c.moveTo(-8, -11); c.lineTo(4, -11); c.lineTo(9, -6); c.lineTo(9, 11); c.lineTo(-8, 11); c.closePath(); c.stroke();
+			c.beginPath(); c.moveTo(-4, -2); c.lineTo(5, -2); c.moveTo(-4, 3); c.lineTo(5, 3); c.moveTo(-4, 8); c.lineTo(2, 8); c.stroke();
+		},
+	];
+	const CARDS = 12; // icons repeat around the belt
+
+	// easeInOutQuart: slow start, fast middle, gentle landing.
+	const ease = (t) => (t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2);
+
+	const card = (ctx, x, y, w, h, stroke, glow = 0) => {
+		ctx.save();
+		if (glow) { ctx.shadowColor = stroke; ctx.shadowBlur = glow; }
+		ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, 12);
+		ctx.fillStyle = '#1e1b26'; ctx.fill();
+		ctx.restore();
+		ctx.strokeStyle = stroke; ctx.lineWidth = 1.5;
+		ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, 12); ctx.stroke();
+	};
+
+	const icon = (ctx, draw, x, y, scale, color) => {
+		ctx.save();
+		ctx.translate(x, y); ctx.scale(scale, scale);
+		ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = 1.6; ctx.lineJoin = ctx.lineCap = 'round';
+		draw(ctx);
+		ctx.restore();
+	};
+
+	anims.belt = new AnimationCanvas('#belt', {
+		draw({ ctx, width, height, time, animated }) {
+			const color = THEMES[theme];
+			const size = Math.min(84, width / 7);
+			const pitch = size * 1.35;
+			const beltY = height * 0.7;
+			const cx = width / 2;
+
+			// Which step are we on, and how far through its move?
+			const t = animated ? time : 0;
+			const step = Math.floor(t / STEP);
+			const into = t - step * STEP;
+			const progress = ease(Math.min(1, into / MOVE));
+			const offset = (step + progress) * pitch;
+
+			ctx.clearRect(0, 0, width, height);
+
+			// The belt track.
+			ctx.strokeStyle = '#332e3d'; ctx.lineWidth = 2;
+			ctx.beginPath(); ctx.moveTo(0, beltY + size * 0.62); ctx.lineTo(width, beltY + size * 0.62); ctx.stroke();
+
+			// Cards wrap around so the belt never runs out.
+			const loop = CARDS * pitch;
+			for (let i = 0; i < CARDS; i++) {
+				let x = (((i * pitch - offset) % loop) + loop) % loop - loop / 2 + cx;
+				// Fade cards near the edges.
+				ctx.globalAlpha = Math.max(0, Math.min(1, (width / 2 - Math.abs(x - cx)) / (size * 1.5)));
+				card(ctx, x, beltY, size, size, '#4a4356');
+				icon(ctx, icons[i % icons.length], x, beltY, size / 48, '#f1ece2');
+			}
+			ctx.globalAlpha = 1;
+
+			// The hub bumps up and glows just as a card lands under it.
+			const landed = into - MOVE;
+			const bump = landed > 0 && landed < 400 ? Math.sin((landed / 400) * Math.PI) : 0;
+			const hubY = height * 0.27 - bump * 12;
+			const hub = size * 1.15;
+
+			// Connector from hub to the slot on the belt.
+			ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
+			ctx.beginPath(); ctx.moveTo(cx, hubY + hub / 2); ctx.lineTo(cx, beltY - size / 2 - 6); ctx.stroke();
+			ctx.setLineDash([]);
+			ctx.strokeStyle = color; ctx.lineWidth = 2;
+			ctx.beginPath(); ctx.roundRect(cx - size / 2 - 6, beltY - size / 2 - 6, size + 12, size + 12, 16); ctx.stroke();
+
+			card(ctx, cx, hubY, hub, hub, color, 18 + bump * 40);
+			// Hub mark: a four-point spark in the theme color.
+			const k = hub * 0.28;
+			ctx.fillStyle = color;
+			ctx.beginPath();
+			ctx.moveTo(cx, hubY - k);
+			ctx.quadraticCurveTo(cx, hubY, cx + k, hubY);
+			ctx.quadraticCurveTo(cx, hubY, cx, hubY + k);
+			ctx.quadraticCurveTo(cx, hubY, cx - k, hubY);
+			ctx.quadraticCurveTo(cx, hubY, cx, hubY - k);
+			ctx.fill();
+		},
+	});
+
+	// Click: switch theme, and repaint right away if it's showing a still frame.
+	anims.belt.canvas.addEventListener('pointerdown', () => {
+		theme = (theme + 1) % THEMES.length;
+		if (!anims.belt.animated) anims.belt.render();
+	});
+}
+
+// --- Warp field ---------------------------------------------------------
+{
+	let stars = [];
+	let speed = 1;
+	const spawn = (w, h, anywhere) => {
+		const angle = Math.random() * Math.PI * 2;
+		const dist = anywhere ? Math.random() * Math.max(w, h) / 2 : Math.random() * 20;
+		return { angle, dist, v: 0.02 + Math.random() * 0.06, size: 0.5 + Math.random() * 1.5, color: COLORS[(Math.random() * COLORS.length) | 0] };
+	};
+	anims.warp = new AnimationCanvas('#warp', {
+		pointer: true,
+		setup({ width, height }) {
+			stars = Array.from({ length: 260 }, () => spawn(width, height, true));
+		},
+		draw({ ctx, width, height, delta, pointer }) {
+			// Pointer above center speeds up, below slows down.
+			const target = pointer.inside ? 1 - pointer.ny * 3 : 1;
+			speed += (Math.max(0.2, target) - speed) * 0.05;
+
+			ctx.fillStyle = 'rgba(30, 27, 38, 0.35)'; // leave short trails
+			ctx.fillRect(0, 0, width, height);
+			const cx = width / 2, cy = height / 2, max = Math.hypot(cx, cy);
+			for (const s of stars) {
+				s.dist += s.v * delta * speed * (1 + s.dist / 120);
+				if (s.dist > max) Object.assign(s, spawn(width, height, false));
+				const x = cx + Math.cos(s.angle) * s.dist;
+				const y = cy + Math.sin(s.angle) * s.dist;
+				ctx.globalAlpha = Math.min(1, s.dist / 80);
+				ctx.fillStyle = s.color;
+				ctx.beginPath();
+				ctx.arc(x, y, s.size * (1 + s.dist / max), 0, Math.PI * 2);
+				ctx.fill();
+			}
+			ctx.globalAlpha = 1;
+		},
+	});
+}
+
+</script>
+</body>
+</html>
