@@ -12,13 +12,13 @@
   try { R = new THREE.WebGLRenderer({ canvas: cv, antialias: false, alpha: false }); }
   catch (e) { wrap.hidden = true; return; }
   R.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
-  const BG = 0x9e7378; // dusty-rose dusk, as in the intro
+  const BG = 0x1c1820; // the page's purple: no sky or ground, so the goat floats on the page
   R.setClearColor(BG);
 
   const S = new THREE.Scene();
-  S.fog = new THREE.Fog(0x9e7378, 12, 46);
+  S.fog = new THREE.Fog(BG, 10, 26);
   // the intro's dusk sky: dusty rose at the horizon to deep violet overhead
-  S.add(new THREE.Mesh(new THREE.SphereGeometry(80, 16, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
+  if (0) S.add(new THREE.Mesh(new THREE.SphereGeometry(80, 16, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
     vertexShader: 'varying float h;void main(){h=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
     fragmentShader: 'varying float h;void main(){vec3 a=vec3(.62,.45,.47),b=vec3(.38,.31,.45),c=vec3(.13,.12,.25);vec3 col=mix(a,b,smoothstep(0.,.18,h));col=mix(col,c,smoothstep(.18,.75,h));gl_FragColor=vec4(col,1.);}' })));
   const cam = new THREE.PerspectiveCamera(40, 2, 0.1, 100);
@@ -65,7 +65,7 @@
       col = v < .55 ? `rgba(${132 + v * 50 | 0},${142 + v * 40 | 0},${104 + v * 24 | 0},.45)` : `rgba(${206 + v * 25 | 0},${210 + v * 20 | 0},${184 + v * 16 | 0},.35)`;
       for (const ox of [-64, 0, 64]) for (const oy of [-64, 0, 64]) { const gr = x.createRadialGradient(px + ox, py + oy, 0, px + ox, py + oy, rr); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.beginPath(); x.ellipse(px + ox, py + oy, rr, rr * sq, rot, 0, 7); x.fill(); } }
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(14, 10); t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = R.capabilities.getMaxAnisotropy(); return t; })();
-  S.add(new THREE.Mesh(gn, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassT })));
+  if (0) S.add(new THREE.Mesh(gn, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassT })));
 
   // forest: rings of trees around the clearing, thicker behind the goat
   const spots = [];
@@ -78,7 +78,7 @@
     if (spots.some(([u, v, w]) => Math.hypot(u - x, v - z) < w + cr + .2)) continue; // canopies never overlap
     spots.push([x, z, cr]);
     const t = TREES[kd]();
-    t.position.set(x, 0, z); t.scale.setScalar(sc); t.rotation.y = rnd() * 6; S.add(t);
+    t.position.set(x, 0, z); t.scale.setScalar(sc); t.rotation.y = rnd() * 6; // forest off for the floating look
   }
   // a few rocks and stumps in the clearing
   const rockM = M('#4c4852');
@@ -159,7 +159,12 @@
   { const b = bc.getContext('2d'), gr = b.createRadialGradient(32, 32, 2, 32, 32, 31); gr.addColorStop(0, 'rgba(0,0,0,.6)'); gr.addColorStop(.6, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); b.fillStyle = gr; b.fillRect(0, 0, 64, 64); }
   const blob = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 3.2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(bc), transparent: true, depthWrite: false }));
   S.add(blob);
-  function placeBlob() { blob.rotation.set(-Math.PI / 2, 0, goat.rotation.y); blob.position.set(goat.position.x, .16, goat.position.z); }
+  // a soft pool of dusk light under him, fading into the page colour, so the dark goat reads against the dark page
+  const gc = document.createElement('canvas'); gc.width = gc.height = 128;
+  { const b = gc.getContext('2d'), gr = b.createRadialGradient(64, 64, 0, 64, 64, 63); gr.addColorStop(0, 'rgba(158,115,120,.55)'); gr.addColorStop(.45, 'rgba(110,84,110,.25)'); gr.addColorStop(1, 'rgba(28,24,32,0)'); b.fillStyle = gr; b.fillRect(0, 0, 128, 128); }
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(gc), transparent: true, depthWrite: false, fog: false }));
+  glow.rotation.x = -Math.PI / 2; glow.renderOrder = -1; S.add(glow);
+  function placeBlob() { blob.rotation.set(-Math.PI / 2, 0, goat.rotation.y); blob.position.set(goat.position.x, .16, goat.position.z); glow.position.set(goat.position.x, .1, goat.position.z); }
   placeBlob();
 
   // --- fireflies: glowing sprites that drift on slow noise and pulse ---
