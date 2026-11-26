@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Homepage animations — Matthew Szklarz, Frontend Developer</title>
+<title>Mendix storytelling animations — Matthew Szklarz, Frontend Developer</title>
 <meta name="description" content="Case study: canvas animations Matthew Szklarz designed and built for the mendix.com homepage, and AnimationCanvas, the open-source helper behind them.">
-<meta property="og:title" content="Homepage animations — Matthew Szklarz">
+<meta property="og:title" content="Mendix storytelling animations — Matthew Szklarz">
 <meta property="og:description" content="Canvas animations for the mendix.com homepage, rebuilt as live demos with an open-source helper library.">
 <meta property="og:image" content="https://matthewszklarz.com/work/animation-canvas/og.jpg">
 <meta name="theme-color" content="#1c1820">
@@ -94,6 +94,10 @@
   .stage .mid{height:320px}
   .stage figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
   .hint{color:var(--gold)}
+  .reel{margin:26px 0 34px}
+  .reel video{display:block;width:100%;height:auto;aspect-ratio:2940/1744;border-radius:6px;border:1px solid var(--line);background:#05080f}
+  .reel figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .reel figcaption strong{color:var(--ink);font-weight:600}
   @media (max-width:640px){.stage .tall{height:340px}.stage .mid{height:260px}}
 </style>
 </head>
@@ -118,7 +122,7 @@
   <div class="wrap narrow">
     <a class="back" href="/work/#projects">← Selected work</a>
     <div class="intro">
-      <h1>Homepage animations</h1>
+      <h1>Mendix storytelling animations</h1>
       <p class="lead">The design team handed me static comps for the 2025 mendix.com homepage. I pitched motion for them, then built it: a set of canvas animations, all running on one small helper I wrote to handle the plumbing.</p>
       <dl class="facts">
         <div><dt>For</dt><dd>The mendix.com homepage, 2025</dd></div>
@@ -141,6 +145,31 @@
   </div>
 
   <div class="wrap narrow">
+    <section aria-labelledby="h-live">
+      <h2 id="h-live">On mendix.com</h2>
+      <p>Screen recordings of each animation in its section of the site, next to the copy it supports.</p>
+      <figure class="reel">
+        <video src="video/space-hero.mp4" poster="video/space-hero.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Screen recording of the homepage hero section on mendix.com"></video>
+        <figcaption><strong>Homepage hero</strong> · &#8220;Build your agentic enterprise.&#8221;</figcaption>
+      </figure>
+      <figure class="reel">
+        <video src="video/partner-wheel.mp4" poster="video/partner-wheel.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Screen recording of the partners section on mendix.com"></video>
+        <figcaption><strong>Partners</strong> · &#8220;Prosper with our partners.&#8221;</figcaption>
+      </figure>
+      <figure class="reel">
+        <video src="video/integrations-belt.mp4" poster="video/integrations-belt.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Screen recording of the integrations section on mendix.com"></video>
+        <figcaption><strong>Integrations</strong> · &#8220;Integrate with ease.&#8221;</figcaption>
+      </figure>
+      <figure class="reel">
+        <video src="video/analyst-parallax.mp4" poster="video/analyst-parallax.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Screen recording of the analyst report section on mendix.com"></video>
+        <figcaption><strong>Analyst report</strong> · &#8220;The proof is in the platform.&#8221;</figcaption>
+      </figure>
+      <figure class="reel">
+        <video src="video/customer-stories.mp4" poster="video/customer-stories.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Screen recording of the customer stories section on mendix.com"></video>
+        <figcaption><strong>Customer stories</strong> · &#8220;Industry leaders are getting ahead with Mendix.&#8221;</figcaption>
+      </figure>
+    </section>
+
     <section aria-labelledby="h-comps">
       <h2 id="h-comps">From static comps to motion</h2>
       <p>The homepage redesign came to me as flat, polished comps: a starry hero, a partner section, an integrations row, a wall of customer logos. They looked great standing still. My job was to build them, and I saw a chance to make each section feel alive without getting in the way of the message.</p>
@@ -197,6 +226,10 @@
 
   </div>
 </main>
+<script>{const rm=matchMedia('(prefers-reduced-motion: reduce)'),vs=[...document.querySelectorAll('.reel video')];
+ const set=()=>vs.forEach(v=>{if(rm.matches){v.pause();v.removeAttribute('autoplay')}else v.play().catch(()=>{})});set();rm.addEventListener('change',set);
+ // only play what's on screen
+ const io=new IntersectionObserver(es=>es.forEach(e=>{if(rm.matches)return;e.isIntersecting?e.target.play().catch(()=>{}):e.target.pause()}));vs.forEach(v=>io.observe(v))}</script>
 
 <footer>
   <div class="wrap">
